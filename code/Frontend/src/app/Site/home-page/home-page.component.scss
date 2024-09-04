@@ -1,0 +1,50 @@
+.songs-box{
+    margin-top: 4%;
+    padding-bottom: 1%;
+    margin-left: 1%;
+    margin-right: 2%;
+    border-radius: 15px;    
+  }
+
+  .playlist-grid {
+    padding-left: 1.5%;
+    padding-top: 1.5%;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 80px;
+    row-gap: 50px; 
+    padding-bottom: 40px;
+    border-radius: 15px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: 0px 0px 10px 5px #cac9c9;;
+  }
+
+
+  
+  .team-card {
+    cursor: pointer;
+    background-color: #dadada;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease-in-out;
+    box-shadow: 0px 0px 5px 2px #cac9c9;;
+  }
+  
+  .team-card:hover {
+    transform: scale(1.05);
+  }
+  
+  .team-card h2 {
+    margin: 0;
+    color: #333;
+    font-size: 24px;
+  }
+  
+  .team-card p {
+    color: #666;
+    font-size: 16px;
+  }
+  

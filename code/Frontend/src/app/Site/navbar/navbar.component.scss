@@ -1,0 +1,18 @@
+
+.containerNav{
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    text-align: center;
+    padding: 0 2vw; 
+    height: 6rem;
+    background-color: gray;
+}
+
+.logo {
+    max-height: 70px;
+    max-width: 100%;
+    height: auto;
+}
+
