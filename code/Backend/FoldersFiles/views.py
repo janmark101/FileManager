@@ -62,12 +62,31 @@ class SubFoldersView(APIView):
         
         folder_names.append(folder.name)
         rev_folder_names = []
+        
         for name in reversed(folder_names):
             rev_folder_names.append(name)
                 
-        print('d')
         folders = Folder.objects.filter(parent_folder_id=fid)
+        files = File.objects.filter(folder=fid)
+        files_serializer = FileSerializer(files,many=True)
         team_serializer = TeamSerialzer(team,many=False)
         folders_serializer = FolderSerializer(folders,many=True)
-        return Response({"team" : team_serializer.data,"folders" : folders_serializer.data,"files":[],"folder_names" : rev_folder_names}, status=status.HTTP_200_OK)
+        return Response({"team" : team_serializer.data,"folders" : folders_serializer.data,"files":files_serializer.data,"folder_names" : rev_folder_names}, status=status.HTTP_200_OK)
         
+        
+
+from django.http import FileResponse, Http404
+import os
+from django.conf import settings
+
+def download_file(request, file_path):
+    file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+    file_full_path = '/app/' + file_path 
+    print(settings.MEDIA_ROOT,"media root")
+    print(file_full_path, " E KURWA")
+    if os.path.exists(file_full_path):
+        response = FileResponse(open(file_full_path, 'rb'), as_attachment=True)
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_full_path)}"'
+        return response
+    else:
+        raise Http404("File does not exist.")

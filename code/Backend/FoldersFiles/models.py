@@ -24,11 +24,15 @@ def upload_to(instance, filename):
 
 class File(models.Model):
     file = models.FileField(upload_to=upload_to)
-    folder = models.ForeignKey(Folder, related_name='files', null=True, blank=True, on_delete=models.CASCADE)
+    folder = models.ForeignKey(Folder, related_name='files', null=False, blank=False, on_delete=models.CASCADE)
     owner = models.ForeignKey(User,null=False,blank=False,on_delete=models.CASCADE)
-    name = models.CharField(max_length=100,null=False,blank=False)
+    name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    
+    def save(self, *args, **kwargs):
+        self.name = self.file.name
+        super().save(*args,**kwargs)
     
     def __str__(self):
         return self.name

@@ -36,4 +36,14 @@ export class SiteService {
     }))
   }
 
+  download(){
+    let headers = this.Auth.setHeaders()
+
+    return this.http.get(`${this.baseURL}download/testowy-folder/hwmonitor_1.53.exe`, {headers})
+    .pipe(catchError(error =>{
+      console.log("Error fetching folders: ",error);
+      return throwError(error)
+    }))
+  }
+
 }

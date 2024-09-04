@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { take } from 'rxjs';
 import { Team, File_,Folder, Response } from '../Models/Models';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -21,6 +21,8 @@ export class SubFolderComponent {
     created_at :  new Date(),
     user : 0
   }
+
+  extIcons = ['csv','docx','exe','jpg','json-file','mp4','pdf','png','ppt','xml']
 
   path : string[] = []
 
@@ -48,8 +50,8 @@ export class SubFolderComponent {
       
       this.Folders = data.folders;
       this.accTeam = data.team;
-      this.Files = data.files
-      this.path = data.folder_names
+      this.Files = data.files;
+      this.path = data.folder_names;
       console.log(data);
       
       this.makePath();
@@ -88,4 +90,49 @@ export class SubFolderComponent {
   }
 
 
+  getIconUrl(file: any): string {
+    const fileExtension = file.name.split('.').pop();
+    
+    if (this.extIcons.includes(fileExtension))
+      return `assets/WebImages/icons/${fileExtension}.png`
+    else
+      return `assets/WebImages/icons/default.png`
+    }
+
+    isDropdownOpen: boolean[] = [];
+
+    toggleDropdown(index: number) {
+      this.closeAllDropdowns()
+      this.isDropdownOpen[index] = !this.isDropdownOpen[index];
+    }
+
+    closeAllDropdowns() {
+      this.isDropdownOpen = [];
+    }
+  
+    // HostListener na dokument, aby zamknąć dropdowny po kliknięciu poza nimi
+    @HostListener('document:click', ['$event'])
+    closeDropdownOnClickOutside(event: MouseEvent) {
+      if (!(event.target as HTMLElement).closest('.dropdown')) {
+        this.closeAllDropdowns();
+      }
+    }
+
+
+    getDownloadUrl(file: any): string {
+      return `http://localhost:8000/web/download/${file}`; // Upewnij się, że ścieżka jest poprawna
+    }
+    
+    
+    Rename(){
+
+    }
+
+    Delete(){
+
+    }
+
 }
+
+
+

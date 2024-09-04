@@ -148,6 +148,7 @@ STATIC_URL = 'static/'
 
 #MEDIA_ROOT = BASE_DIR / '../Frontend/src/assets/'
 MEDIA_ROOT = BASE_DIR / 'Folders/'
+MEDIA_URL = 'Folders/'
 
 
 # Default primary key field type
