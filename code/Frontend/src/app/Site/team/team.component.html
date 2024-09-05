@@ -9,9 +9,9 @@
 <hr >
 
 
-<div class="flex row-auto gap-10 justify-start ml-20 mt-20">
-<div *ngFor="let folder of Folders" class="folders">
-    <a (click)="navigateToSubfolder(folder.id)" >
+<div class="flex row-auto gap-6 justify-start ml-20 mt-20">
+<div *ngFor="let folder of Folders" class="folders ">
+    <a (click)="navigateToSubfolder(folder.id)" class="">
         <img src="assets/WebImages/icons/folder.png" alt="Logo" class="logo" />
       </a>
     <a class="fname">{{folder.name}}</a>

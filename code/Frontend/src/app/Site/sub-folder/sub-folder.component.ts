@@ -31,6 +31,7 @@ export class SubFolderComponent {
   extIcons = ['csv','docx','exe','jpg','json','mp4','pdf','png','ppt','xml','js','txt','html','mp3','zip','ppt']
 
   path : string[] = []
+  path_ids : string[] = []
 
   currentPath: string[] = [];
  
@@ -41,6 +42,7 @@ export class SubFolderComponent {
     this.Files  = []
     this.currentPath = [];
     this.path = [];
+    this.path_ids = [];
     this.fetchSubFoldersFiles();
   }
 
@@ -57,7 +59,10 @@ export class SubFolderComponent {
       this.Folders = data.folders;
       this.accTeam = data.team;
       this.Files = data.files;
-      this.path = data.folder_names;
+      console.log(data);
+      
+      this.path = data.folder_names_ids[0];
+      this.path_ids = data.folder_names_ids[1]
       console.log(data);
       
       this.makePath();
@@ -161,7 +166,6 @@ export class SubFolderComponent {
       let new_name = `${form.value['edit-name']}.${fileExtension}`
       
       this.SiteService.renameFile(new_name,fileId).pipe(take(1)).subscribe((data:unknown) =>{
-        console.log(data);
         this.selected_file.name = new_name
         this.closeRenamePanel();
       },(error) =>{
@@ -169,6 +173,43 @@ export class SubFolderComponent {
         
       })
     }
+
+    draggedFile: any;
+
+  onDragStart(event: DragEvent, file: any) {
+    this.draggedFile = file;
+    event.dataTransfer?.setData('text/plain', file.name);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault(); 
+  }
+
+  onDrop(event: DragEvent, folder: Folder | any) {
+    event.preventDefault(); 
+
+    let folder_  = {
+      id : -1,
+    }
+    
+    if (folder.id == null){
+      folder_.id = Number(this.path_ids[folder-1])      
+    }
+    else{
+      folder_.id = folder.id
+    }
+    
+
+    if (this.draggedFile) {
+      this.SiteService.moveFile(folder_.id,this.draggedFile.id).pipe(take(1)).subscribe((data:unknown)=>{
+        this.ngOnInit();
+        this.draggedFile = null;   
+      },(error)=>{
+        console.error(error);
+        this.draggedFile = null;
+      })
+    }
+  }
 
 }
 

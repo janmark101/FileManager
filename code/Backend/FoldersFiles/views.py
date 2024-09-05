@@ -71,22 +71,27 @@ class SubFoldersView(APIView):
         folder = get_object_or_404(Folder,id=fid)
         
         folder_names = []
+        folder_ids = []
         while folder.parent_folder is not None:
             folder_names.append(folder.name)
+            folder_ids.append(folder.id)
             folder = folder.parent_folder
         
+        folder_ids.append(folder.id)
         folder_names.append(folder.name)
         rev_folder_names = []
+        rev_folder_ids = []
         
-        for name in reversed(folder_names):
-            rev_folder_names.append(name)
+        for i in range(len(folder_names)-1,-1,-1):
+            rev_folder_names.append(folder_names[i])
+            rev_folder_ids.append(folder_ids[i])
                 
         folders = Folder.objects.filter(parent_folder_id=fid)
         files = File.objects.filter(folder=fid)
         files_serializer = FileSerializer(files,many=True)
         team_serializer = TeamSerialzer(team,many=False)
         folders_serializer = FolderSerializer(folders,many=True)
-        return Response({"team" : team_serializer.data,"folders" : folders_serializer.data,"files":files_serializer.data,"folder_names" : rev_folder_names}, status=status.HTTP_200_OK)
+        return Response({"team" : team_serializer.data,"folders" : folders_serializer.data,"files":files_serializer.data,"folder_names_ids" : [rev_folder_names,rev_folder_ids]}, status=status.HTTP_200_OK)
         
         
 
@@ -101,6 +106,11 @@ class FileObjectView(APIView):
 
     def patch(self,request,id):
         file = get_object_or_404(File,id=id)
+        
+        print(request.data)
+        if request.data.get('folder'):
+            get_object_or_404(Folder,id=request.data.get('folder'))
+            
         serializer = FileSerializer(file,data=request.data,partial=True)
         
         if serializer.is_valid():

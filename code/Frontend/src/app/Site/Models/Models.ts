@@ -41,5 +41,5 @@ export interface Response{
     team : Team,
     folders : Folder[],
     files : File_[],
-    folder_names : string[]
+    folder_names_ids : string[][]
   }
