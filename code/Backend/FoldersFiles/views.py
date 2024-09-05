@@ -11,6 +11,21 @@ from Auth.models import Team
 from django.shortcuts import get_object_or_404
 from Auth.serializers import TeamSerialzer
 from django.db.models import Q
+from django.http import FileResponse, Http404
+import os
+from django.conf import settings
+
+def download_file(request, file_path):
+    # file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
+    file_full_path = '/app/' + file_path 
+    if os.path.exists(file_full_path):
+        response = FileResponse(open(file_full_path, 'rb'), as_attachment=True)
+        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_full_path)}"'
+        return response
+    else:
+        raise Http404("File does not exist.")
+
+
 
 class UploadFileView(APIView):
     permission_classes = [IsAuthenticated]
@@ -75,18 +90,20 @@ class SubFoldersView(APIView):
         
         
 
-from django.http import FileResponse, Http404
-import os
-from django.conf import settings
+class FileObjectView(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[TokenAuthentication]
+    
+    def delete(self,request,id):
+        file = get_object_or_404(File,id=id)
+        file.delete()
+        return Response(status=status.HTTP_200_OK)
 
-def download_file(request, file_path):
-    file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
-    file_full_path = '/app/' + file_path 
-    print(settings.MEDIA_ROOT,"media root")
-    print(file_full_path, " E KURWA")
-    if os.path.exists(file_full_path):
-        response = FileResponse(open(file_full_path, 'rb'), as_attachment=True)
-        response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_full_path)}"'
-        return response
-    else:
-        raise Http404("File does not exist.")
+    def patch(self,request,id):
+        file = get_object_or_404(File,id=id)
+        serializer = FileSerializer(file,data=request.data,partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)

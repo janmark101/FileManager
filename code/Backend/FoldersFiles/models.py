@@ -29,9 +29,16 @@ class File(models.Model):
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    file_extension = models.CharField(max_length=10, blank=True)
     
     def save(self, *args, **kwargs):
-        self.name = self.file.name
+        if not self.name:
+            self.name = self.file.name
+        
+        if self.file:
+            _, extension = os.path.splitext(self.file.name)
+            self.file_extension = extension.lower()
+            
         super().save(*args,**kwargs)
     
     def __str__(self):

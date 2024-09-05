@@ -9,6 +9,13 @@ import { HomePageComponent } from './Site/home-page/home-page.component';
 import { TeamComponent } from './Site/team/team.component';
 import { SubFolderComponent } from './Site/sub-folder/sub-folder.component';
 // import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';  
+import { FormsModule } from '@angular/forms';
+import {
+  NgxAwesomePopupModule,
+  DialogConfigModule,
+  ConfirmBoxConfigModule,
+  ToastNotificationConfigModule
+} from '@costlydeveloper/ngx-awesome-popup';
 
 @NgModule({
   declarations: [
@@ -22,7 +29,12 @@ import { SubFolderComponent } from './Site/sub-folder/sub-folder.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    FormsModule,
+    NgxAwesomePopupModule.forRoot(), 
+    DialogConfigModule.forRoot(), 
+    ConfirmBoxConfigModule.forRoot(), 
+    ToastNotificationConfigModule.forRoot() 
   ],
   providers: [],
   bootstrap: [AppComponent]

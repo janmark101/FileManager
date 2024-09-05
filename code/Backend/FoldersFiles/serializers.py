@@ -6,7 +6,7 @@ from Auth.serializers import UserSerializer
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ['name', 'file', 'folder', 'owner']
+        fields = '__all__'
         read_only_fields = ['owner']
 
 

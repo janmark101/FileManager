@@ -36,14 +36,30 @@ export class SiteService {
     }))
   }
 
-  download(){
+  renameFile(newFileName:string,fileId:number){
     let headers = this.Auth.setHeaders()
 
-    return this.http.get(`${this.baseURL}download/testowy-folder/hwmonitor_1.53.exe`, {headers})
+    let data = {
+      'name' : newFileName
+    }
+
+    return this.http.patch(`${this.baseURL}file/${fileId}/`,data,{headers})
     .pipe(catchError(error =>{
-      console.log("Error fetching folders: ",error);
+      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
+
+  }
+
+  deleteFile(fileId:number){
+    let headers = this.Auth.setHeaders()
+
+    return this.http.delete(`${this.baseURL}file/${fileId}/`,{headers})
+    .pipe(catchError(error =>{
+      console.log("Error patching file name: ",error);
+      return throwError(error)
+    }))
+
   }
 
 }
