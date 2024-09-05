@@ -3,6 +3,12 @@ import { take } from 'rxjs';
 import { Team, File_,Folder, Response } from '../Models/Models';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SiteService } from '../Services/site.service';
+import { NgForm } from '@angular/forms';
+import {
+  ConfirmBoxEvokeService,
+  
+} from '@costlydeveloper/ngx-awesome-popup';
+
 
 
 @Component({
@@ -22,13 +28,13 @@ export class SubFolderComponent {
     user : 0
   }
 
-  extIcons = ['csv','docx','exe','jpg','json-file','mp4','pdf','png','ppt','xml']
+  extIcons = ['csv','docx','exe','jpg','json','mp4','pdf','png','ppt','xml','js','txt','html','mp3','zip','ppt']
 
   path : string[] = []
 
   currentPath: string[] = [];
  
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router) {}
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService) {}
 
   ngOnInit(): void {
     this.Folders = []
@@ -96,7 +102,7 @@ export class SubFolderComponent {
     if (this.extIcons.includes(fileExtension))
       return `assets/WebImages/icons/${fileExtension}.png`
     else
-      return `assets/WebImages/icons/default.png`
+      return `assets/WebImages/icons/file.png`
     }
 
     isDropdownOpen: boolean[] = [];
@@ -110,7 +116,7 @@ export class SubFolderComponent {
       this.isDropdownOpen = [];
     }
   
-    // HostListener na dokument, aby zamknąć dropdowny po kliknięciu poza nimi
+
     @HostListener('document:click', ['$event'])
     closeDropdownOnClickOutside(event: MouseEvent) {
       if (!(event.target as HTMLElement).closest('.dropdown')) {
@@ -120,16 +126,48 @@ export class SubFolderComponent {
 
 
     getDownloadUrl(file: any): string {
-      return `http://localhost:8000/web/download/${file}`; // Upewnij się, że ścieżka jest poprawna
+      return `http://localhost:8000/web/download/${file}`; 
     }
     
-    
-    Rename(){
+    isRenameOpen = false;
+    selected_file : File_ | any
+    selected_file_ext : string = '';
+
+    Rename(file:File_){
+      this.selected_file = file
+      this.isRenameOpen = true
+    }
+
+    Delete(fileId:number){
+      this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
+      .subscribe(resp => {
+        if (resp.success===true) {
+          this.SiteService.deleteFile(fileId).pipe(take(1)).subscribe((data:unknown) =>{
+            this.Files = this.Files.filter((item:any)=> item.id != fileId)
+          },(error) =>{
+            console.error(error);
+          })          
+        }
+      });
 
     }
 
-    Delete(){
+    closeRenamePanel(){
+      this.isRenameOpen = false;
+    }
 
+    onRenameFile(form :NgForm, file_name : string,fileId:number){
+      const fileExtension = file_name.split('.').pop();
+      let new_name = `${form.value['edit-name']}.${fileExtension}`
+      
+      this.SiteService.renameFile(new_name,fileId).pipe(take(1)).subscribe((data:unknown) =>{
+        console.log(data);
+        this.selected_file.name = new_name
+        this.closeRenamePanel();
+      },(error) =>{
+        console.error(error);
+        
+      })
     }
 
 }

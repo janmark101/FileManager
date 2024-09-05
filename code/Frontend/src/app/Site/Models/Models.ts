@@ -32,8 +32,9 @@ export interface File_{
     owner : User,
     name  : string,
     created_at : Date,
-    updated_at : Date
-  
+    updated_at : Date,
+    file_extension : string
+    id : number
   }
 
 export interface Response{

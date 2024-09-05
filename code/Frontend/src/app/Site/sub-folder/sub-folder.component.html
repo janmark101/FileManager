@@ -32,8 +32,8 @@
     <i class="fa-solid fa-ellipsis-vertical"></i>
     <div class="dropdown-content" [ngClass]="{'show': isDropdownOpen[i]}">
       <a [href]="getDownloadUrl(file.file)" [attr.download]="file.name">Download</a>
-      <a (click)="Rename()">Rename</a>
-      <a (click)="Delete()">Delete</a>
+      <a (click)="Rename(file)">Rename</a>
+      <a (click)="Delete(file.id)">Delete</a>
     </div>
   </div>
 
@@ -44,4 +44,17 @@
 
 </div>
 
-
+<div class="modal" *ngIf="isRenameOpen">
+  <div class="SizeModalContent">
+      <span class="close" (click)="closeRenamePanel()">&times;</span>
+      <p class="text-2xl font-bold ">Change name</p>
+      <form (ngSubmit)="onRenameFile(rename,selected_file.name,selected_file.id)" class="formContainer mt-4"  #rename="ngForm">
+        <input class="input" type="text" id="edit-name" [ngModel]="selected_file.name" name="edit-name"
+            required />
+          <div class="buttonContainer mt-4">
+            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closeRenamePanel()">Cancel</button>
+              <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+          </div>
+      </form>
+  </div>
+</div>
