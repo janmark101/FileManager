@@ -17,6 +17,8 @@ code/Backend/.env
 ./code/Backend/.env
 /code/Backend/.env
 
+/code/Backend/Folders
+
 # dependencies
 node_modules/
 bower_components/
