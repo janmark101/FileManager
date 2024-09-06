@@ -1,5 +1,5 @@
 
-<div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%;">
+<div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%;" class="mt-3">
 
   <div>
     <i class="fa-solid fa-chevron-left ml-7 mt-3" routerLink="" style="font-size: 1.6rem; cursor: pointer;"></i>
@@ -30,7 +30,7 @@
   <i class="fa-solid fa-plus " style="font-size: 1.5rem;"></i>
   <a class="ml-2">New </a>
   <div class="dropdown mr-28 mt-10">
-    <div class="dropdown-content" [ngClass]="{'show': isDropdownAddOpen}" *ngIf="isDropdownAddOpen">
+    <div class="dropdown-content" style="font-size: 1rem; text-align: center;" [ngClass]="{'show': isDropdownAddOpen}" *ngIf="isDropdownAddOpen">
       <a (click)="addFolder()">New Folder</a>
       <a (click)="addFile()">Add File</a>
     </div>

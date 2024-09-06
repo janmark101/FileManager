@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthServiceService } from './auth-service.service';
-import { catchError, throwError } from 'rxjs';
+import { catchError, Subject, throwError } from 'rxjs';
 import { Response, Folder } from '../Models/Models';
 
 
@@ -14,7 +14,12 @@ export class SiteService {
   constructor(private http: HttpClient,private Auth:AuthServiceService) { }
 
   baseURL = 'http://localhost:8000/web/';
+  private callNgOnInitSubject = new Subject<void>();
+  callNgOnInit$ = this.callNgOnInitSubject.asObservable();
 
+  callNgOnInit() {
+    this.callNgOnInitSubject.next();
+  }
 
   getFolders(id:number){
     let headers = this.Auth.setHeaders()

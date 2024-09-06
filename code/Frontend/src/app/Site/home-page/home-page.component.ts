@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { TeamService } from '../Services/team.service';
 import { Team } from '../Models/Models';
-import { take } from 'rxjs';
+import { Subscription, take } from 'rxjs';
 import { NgForm } from '@angular/forms';
+import { SiteService } from '../Services/site.service';
 
 
 
@@ -14,16 +15,23 @@ import { NgForm } from '@angular/forms';
 export class HomePageComponent implements OnInit {
 
 
-  constructor (private TeamsService: TeamService) {}
+  constructor (private TeamsService: TeamService,private SiteService:SiteService) {}
 
   Teams : Team[] = [];
 
   isAddTeamOpen : boolean = false;
-
+  subscription: Subscription = new Subscription();
 
   ngOnInit(): void {
     this.FetchTeams()
     this.reset();
+    this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
+      this.ngOnInit();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 
   reset(){

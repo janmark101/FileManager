@@ -17,6 +17,8 @@ import {
   ToastNotificationConfigModule
 } from '@costlydeveloper/ngx-awesome-popup';
 import { TeamSettingsComponent } from './Site/team-settings/team-settings.component';
+import { LoginComponent } from './Site/login/login.component';
+import { RegisterComponent } from './Site/register/register.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +28,8 @@ import { TeamSettingsComponent } from './Site/team-settings/team-settings.compon
     TeamComponent,
     SubFolderComponent,
     TeamSettingsComponent,
+    LoginComponent,
+    RegisterComponent,
 
   ],
   imports: [

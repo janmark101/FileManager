@@ -11,6 +11,7 @@ from .serializers import UserSerializer, TeamSerialzer
 from django.contrib.auth.models import User
 from .models import Team
 from django.db.models import Q
+from itertools import chain
 
 class Login(APIView):
     permission_classes = [AllowAny]
@@ -47,10 +48,10 @@ class TeamView(APIView):
     authentication_classes=[TokenAuthentication]
     
     def get(self,request):
-        Teams = Team.objects.filter(
-            Q(users__id=request.user.id) | Q(team_owner=request.user)
-        )
-        serializer = TeamSerialzer(Teams,many=True)
+        teams_owner = Team.objects.filter(team_owner=request.user.id)
+        teams_part = Team.objects.filter(users__id=request.user.id)
+        teams = list(chain(teams_owner, teams_part))
+        serializer = TeamSerialzer(teams,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
     def post(self,request):
@@ -69,3 +70,8 @@ class TeamObjectView(APIView):
         team = get_object_or_404(Team,id=id)
         serializer = TeamSerialzer(team,many=False)
         return Response(serializer.data,status=status.HTTP_200_OK)
+    
+    def delete(self,request,id):
+        team = get_object_or_404(Team,id=id)
+        team.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

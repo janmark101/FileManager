@@ -10,7 +10,7 @@ export interface User{
 export interface Team {
     "id" : number,
     "name" : string,
-    "users" : number[],
+    "users" : User[],
     "created_at" : Date,
     "user" : number
   }
