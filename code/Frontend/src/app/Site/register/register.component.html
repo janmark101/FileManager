@@ -1,1 +1,79 @@
-<p>register works!</p>
+<!-- <div class="parentContainer">
+    <div class="w-full max-w-md mx-auto mt-12">
+        <p class="text-center text-black text-2xl font-medium mt-10 mb-5">Rejestracja</p>
+        <form (ngSubmit)="onSubmit(form)" #form="ngForm" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 ">
+            <div class="flex flex-col space-y-4">
+                <input type="email" placeholder="email" ngModel name="email" id="email"
+                    class="p-4 text-sm border rounded"
+                    [ngClass]="{'border-red-500 bg-red-100 input-error': error_email != null, 'border-gray-300': error_email == null}"
+                    required/>
+                <ul *ngIf="error_email != null" class="flex flex-col list-disc pl-5">
+                    <li *ngFor="let error of error_email" class="text-red-500 text-sm">{{error}}</li>
+                </ul>
+                <input type="password" placeholder="password" ngModel name="password" id="password"
+                    class="p-4 text-sm border rounded"
+                    [ngClass]="{'border-red-500 bg-red-100 input-error': error_password != null, 'border-gray-300': error_password == null}"
+                    required/>
+                <ul *ngIf="error_password != null" class="flex flex-col list-disc pl-5">
+                    <li class="text-red-500 text-sm" *ngFor="let error of error_password">{{error}}</li>
+                </ul>
+                <input type="text" placeholder="firstname" ngModel name="firstname" id="firstname" class="p-4 text-sm border border-gray-300 rounded" />
+                <input type="text" placeholder="lastname" ngModel name="lastname" id="lastname" class="p-4 text-sm border border-gray-300 rounded"/>
+            </div>
+            <div class="flex justify-center flex-col my-10 gap-5">
+                <button class="self-center w-32 rounded left-10 bg-white px-6 py-2 border-double border-4  border-gray-400 shadow-md hover:bg-slate-100 hover:scale-105 transition-transform duration-300">Zarejestruj</button>
+                <p class="text-center text-gray-700">Masz juz konto? <a href="profile" class="text-blue-500">Zaloguj się</a></p>
+            </div>
+        </form>    
+    </div>
+    </div> -->
+
+
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<!------ Include the above in your HEAD tag ---------->
+
+
+<body style="background-color: rgb(255, 255, 255);">
+    <div style="padding-top:5%;" id="login">
+       
+        <div class="container">
+            <div id="login-row" class="row justify-content-center align-items-center">
+                <div id="login-column" class="col-md-6">
+                    <div id="login-box" class="col-md-12">
+                        <form id="login-form" class="form" (ngSubmit)="onSubmit(form)" #form="ngForm">
+                            <h3 class="text-center ">Register</h3>
+                            <div class="form-group">
+                                <label for="username" class="" >Username:</label><br>
+                                <input type="text"  ngModel  name="username" id="username" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="">First name:</label><br>
+                                <input type="text" ngModel  name="firstname" id="firstname" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="">Last name:</label><br>
+                                <input type="text" ngModel  name="lastname" id="lastname" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="">Email:</label><br>
+                                <input type="email" ngModel  name="email" id="email" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="password" class="">Password:</label><br>
+                                <input type="password" ngModel  name="password" id="password" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="submit" name="submit" class="btn btn-secondary btn-md" value="submit">
+                            </div>
+                            <div id="register-link" class="text-right">
+                                <a href="/login" class=""  >Log in here</a>
+                            </div>
+                            <!-- <p style="color:white">{{error}}</p> -->
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
