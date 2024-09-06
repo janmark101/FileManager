@@ -230,6 +230,12 @@ align-items: center;
     height: auto;
 }
 
+.settings {
+  max-height: 45px;
+  max-width: 100%;
+  height: auto;
+}
+
 .ikonname{
     transition: all .2s ease-in-out;
 }

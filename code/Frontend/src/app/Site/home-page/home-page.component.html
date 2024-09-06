@@ -7,3 +7,23 @@
     </div>
 </div>
 
+
+<button style="border: 1px solid black;" (click)="openAddTeamPanel()">Add team</button>
+
+
+
+
+<div class="modal" *ngIf="isAddTeamOpen">
+    <div class="SizeModalContent">
+        <span class="close" (click)="closePanel()">&times;</span>
+          <p class="text-2xl font-bold ">New folder</p>
+          <form (ngSubmit)="onAddTeam(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
+            <input class="input" type="text" id="team-name" placeholder="Team name" name="team-name" ngModel
+              required />
+            <div class="buttonContainer mt-4">
+              <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
+                <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+            </div>
+        </form>
+    </div>
+  </div>

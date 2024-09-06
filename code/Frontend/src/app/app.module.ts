@@ -16,6 +16,7 @@ import {
   ConfirmBoxConfigModule,
   ToastNotificationConfigModule
 } from '@costlydeveloper/ngx-awesome-popup';
+import { TeamSettingsComponent } from './Site/team-settings/team-settings.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import {
     NavbarComponent,
     TeamComponent,
     SubFolderComponent,
+    TeamSettingsComponent,
 
   ],
   imports: [

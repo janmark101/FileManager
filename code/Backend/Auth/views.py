@@ -59,3 +59,13 @@ class TeamView(APIView):
             team.save()
             return Response({'response' : 'Team created!'}, status=status.HTTP_201_CREATED)
         return Response(team.errors,status = status.HTTP_400_BAD_REQUEST)
+    
+    
+class TeamObjectView(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[TokenAuthentication]
+    
+    def get(self,request,id):
+        team = get_object_or_404(Team,id=id)
+        serializer = TeamSerialzer(team,many=False)
+        return Response(serializer.data,status=status.HTTP_200_OK)
