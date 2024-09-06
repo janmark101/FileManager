@@ -33,7 +33,6 @@ class UploadFileView(APIView):
 
     def post(self, request,id):
         folder = get_object_or_404(Folder,id=id)
-        print(request)
         uploaded_file = request.FILES.get('file')
         if not uploaded_file:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)

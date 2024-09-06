@@ -36,6 +36,7 @@ export class SubFolderComponent {
   currentPath: string[] = [];
   isDropdownAddOpen : boolean = false;
   isAddFolderOpen : boolean = false;
+  team_id : number = -1
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
  
@@ -44,20 +45,14 @@ export class SubFolderComponent {
   ngOnInit(): void {
     this.Folders = []
     this.Files  = []
-    this.currentPath = [];
+    this.currentPath = this.router.url.split('/');
     this.path = [];
     this.path_ids = [];
+    this.team_id = Number(this.currentPath[2])
     this.fetchSubFoldersFiles();
   }
 
-  buildPath(initialId: string): string[] {
-
-    return [initialId];
-  }
-
-  fetchSubFoldersFiles(){
-    this.currentPath = this.router.url.split('/');
-    
+  fetchSubFoldersFiles(){    
     this.SiteService.getSubFoldersFiles(Number(this.currentPath[2]),Number(this.currentPath.at(-1))).pipe(take(1)).subscribe((data:Response) =>{
       
       this.Folders = data.folders;
@@ -292,11 +287,10 @@ export class SubFolderComponent {
   }
   
   onAddFolder(form :NgForm){
-    let team_id = Number(this.currentPath[2])
     let parent_folder = Number(this.currentPath.at(-1))
     
     
-    this.SiteService.addFolder(form.value['folder-name'],parent_folder,team_id).pipe(take(1)).subscribe((data:unknown) =>{
+    this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
       this.ngOnInit();
       this.closePanel();
     },(error) =>{

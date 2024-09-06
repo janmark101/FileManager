@@ -1,8 +1,21 @@
 
-<div class="ml-5 mt-5 flex items-center relative">
-    <i class="fa-solid fa-chevron-left absolute left-0" routerLink="" style="font-size: 2rem; cursor: pointer;"></i>
-    <h1 class="name  mx-auto text-center">{{accTeam.name}}</h1>
+<div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%;">
+
+  <div>
+    <i class="fa-solid fa-chevron-left ml-7 mt-3" routerLink="" style="font-size: 1.6rem; cursor: pointer;"></i>
   </div>
+
+  <div class="position: absolute; left: 50%; transform: translateX(-50%);" >
+    <h1 class="name   text-center">{{accTeam.name}}</h1>
+  </div>
+
+  <div class="mr-12" [routerLink] ="['/teams',team_id,'settings']">
+    <a  style="cursor: pointer;">
+      <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings" />
+    </a>
+  </div>
+
+</div>
   
 <hr >
 
@@ -16,7 +29,7 @@
 <div class="new" (click)="toggleDropDownAdd()">
   <i class="fa-solid fa-plus " style="font-size: 1.5rem;"></i>
   <a class="ml-2">New </a>
-  <div class="dropdown mr-28 mt-10"   >
+  <div class="dropdown mr-28 mt-10">
     <div class="dropdown-content" [ngClass]="{'show': isDropdownAddOpen}" *ngIf="isDropdownAddOpen">
       <a (click)="addFolder()">New Folder</a>
       <a (click)="addFile()">Add File</a>

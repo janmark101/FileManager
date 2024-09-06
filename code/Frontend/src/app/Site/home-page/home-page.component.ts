@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { TeamService } from '../Services/team.service';
 import { Team } from '../Models/Models';
 import { take } from 'rxjs';
+import { NgForm } from '@angular/forms';
 
 
 
@@ -17,8 +18,19 @@ export class HomePageComponent implements OnInit {
 
   Teams : Team[] = [];
 
+  isAddTeamOpen : boolean = false;
+
+
   ngOnInit(): void {
     this.FetchTeams()
+    this.reset();
+  }
+
+  reset(){
+    this.Teams = [];
+
+    this.isAddTeamOpen = false;
+  
   }
 
   FetchTeams(){
@@ -30,6 +42,27 @@ export class HomePageComponent implements OnInit {
       console.error(error)
     });
     }
+
+
+  openAddTeamPanel(){
+    this.isAddTeamOpen = true
+  }
+
+  closePanel(){
+    this.isAddTeamOpen = false;
+  }
+
+  onAddTeam(form:NgForm){
+    let team_name = form.value['team-name']
+
+    this.TeamsService.addTeam(team_name).pipe(take(1)).subscribe((data:unknown) => {
+      console.log(data);
+      this.ngOnInit();
+    },(error:Error)=>{
+      console.log(error);
+      
+    })
+  }
 
 }
 

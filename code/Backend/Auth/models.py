@@ -9,4 +9,7 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering =['id']
 # Create your models here.
