@@ -51,10 +51,36 @@ export class SiteService {
 
   }
 
+  renameFolder(newFileName:string,fileId:number){
+    let headers = this.Auth.setHeaders()
+
+    let data = {
+      'name' : newFileName
+    }
+
+    return this.http.patch(`${this.baseURL}folder/${fileId}/`,data,{headers})
+    .pipe(catchError(error =>{
+      console.log("Error patching file name: ",error);
+      return throwError(error)
+    }))
+
+  }
+
   deleteFile(fileId:number){
     let headers = this.Auth.setHeaders()
 
     return this.http.delete(`${this.baseURL}file/${fileId}/`,{headers})
+    .pipe(catchError(error =>{
+      console.log("Error patching file name: ",error);
+      return throwError(error)
+    }))
+
+  }
+
+  deleteFolder(folderId:number){
+    let headers = this.Auth.setHeaders()
+
+    return this.http.delete(`${this.baseURL}folder/${folderId}/`,{headers})
     .pipe(catchError(error =>{
       console.log("Error patching file name: ",error);
       return throwError(error)
@@ -72,6 +98,54 @@ export class SiteService {
     return this.http.patch(`${this.baseURL}file/${fileId}/`,data,{headers})
     .pipe(catchError(error =>{
       console.log("Error patching file name: ",error);
+      return throwError(error)
+    }))
+
+  }
+
+  moveFolder(parentFolderId:number,folderId:number){
+    let headers = this.Auth.setHeaders() 
+
+    let data = {
+      'parent_folder' : parentFolderId
+    }
+
+    return this.http.patch(`${this.baseURL}folder/${folderId}/`,data,{headers})
+    .pipe(catchError(error =>{
+      console.log("Error patching file name: ",error);
+      return throwError(error)
+    }))
+
+  }
+
+
+  
+  addFolder(folder_name:string, parent_folder_id : number | null, team_id :number){
+    let headers = this.Auth.setHeaders()
+    let user = this.Auth.getUser()
+    
+    let data = {
+      'team' : team_id,
+      'parent_folder' : parent_folder_id,
+      'owner' : user.id,
+      'name' : folder_name
+    }
+
+    return this.http.post(`${this.baseURL}teams/${team_id}/`,data, {headers})
+    .pipe(catchError(error =>{
+      console.log("Error fetching folders: ",error);
+      return throwError(error)
+    }))
+
+  }
+
+
+  addFile(file:FormData, folder_id : number){
+    let headers = this.Auth.setHeaders()
+  
+    return this.http.post(`${this.baseURL}folder/${folder_id}/addfile/`,file, {headers})
+    .pipe(catchError(error =>{
+      console.log("Error fetching folders: ",error);
       return throwError(error)
     }))
 

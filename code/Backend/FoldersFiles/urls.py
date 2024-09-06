@@ -8,5 +8,7 @@ urlpatterns = [
     path('teams/<int:id>/', views.FoldersForTeamView.as_view()),
     path('teams/<int:tid>/<int:fid>', views.SubFoldersView.as_view()),
     path('download/<path:file_path>/', views.download_file, name='download_file'),
-    path('file/<int:id>/',views.FileObjectView.as_view())
+    path('file/<int:id>/',views.FileObjectView.as_view()),
+    path('folder/<int:id>/',views.FolderObjectView.as_view()),
+    path('folder/<int:id>/addfile/',views.UploadFileView.as_view())
 ]

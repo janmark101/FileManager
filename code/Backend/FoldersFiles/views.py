@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from .models import File, Folder
-from .serializers import FileSerializer, FolderSerializer
+from .serializers import FileSerializer, FolderSerializer, FolderAddSerializer
 from rest_framework.authentication import TokenAuthentication
 from Auth.models import Team
 from django.shortcuts import get_object_or_404
@@ -31,16 +31,14 @@ class UploadFileView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes=[TokenAuthentication]
 
-    def post(self, request, *args, **kwargs):
-        folder_id = request.data.get('folder_id')
-        folder = Folder.objects.get(id=folder_id)
-
+    def post(self, request,id):
+        folder = get_object_or_404(Folder,id=id)
+        print(request)
         uploaded_file = request.FILES.get('file')
         if not uploaded_file:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         file_instance = File.objects.create(
-            name=uploaded_file.name,
             file=uploaded_file,
             folder=folder,
             owner=request.user
@@ -61,6 +59,15 @@ class FoldersForTeamView(APIView):
         )
         folders_serializer = FolderSerializer(folders,many=True)
         return Response({"team" :team_serializer.data,"folders" :folders_serializer.data},status=status.HTTP_200_OK)
+    
+    def post(self,request,id):
+        team = get_object_or_404(Team,id=id)
+        
+        folder = FolderAddSerializer(data=request.data)
+        if folder.is_valid():
+            folder.save()
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(folder.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class SubFoldersView(APIView):
     permission_classes = [IsAuthenticated]
@@ -113,6 +120,31 @@ class FileObjectView(APIView):
             
         serializer = FileSerializer(file,data=request.data,partial=True)
         
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class FolderObjectView(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[TokenAuthentication]
+    
+    def delete(self,request,id):
+        folder = get_object_or_404(Folder,id=id)
+        folder.delete()
+        return Response(status=status.HTTP_200_OK)
+
+    def patch(self,request,id):
+        folder = get_object_or_404(Folder,id=id)
+
+        if request.data.get('parent_folder'):
+            temp = get_object_or_404(Folder,id=request.data.get('parent_folder'))
+            folder.parent_folder = temp
+            folder.save()
+            return Response(status=status.HTTP_200_OK)
+        
+        serializer = FolderSerializer(folder,data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

@@ -4,27 +4,267 @@
     height: auto;
 }
 
-.folders{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: all .2s ease-in-out;
-    cursor: pointer;
-    width: 10rem;
-}
-
-.folders:hover{
-    transform: scale(1.1);
-}
 
 .name{
     font-size: 2.5rem;
 }
 
-.fname{
-    
+.path{
+    display: flex;
+    flex-direction: row;
+}
+
+.link{
+    cursor: pointer;
+    transition: all .2s ease-in-out;
+}
+
+.link:hover{
+    color: blue;
+    text-decoration: underline;
+    transform: scale(1.05);
+}
+
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  .show {
+    display: block;
+  }
+
+
+  .fname{
     text-align: center;
     display: inline-block; 
     max-width: 9rem; 
     word-wrap: break-word;
   }
+  
+  .folders {
+    transform: scale(1.15);
+  }
+
+
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+
+
+.formContainer{
+  width: 100%;
+}
+
+
+.SizeModalContent,
+.modal-content h2 {
+  margin-top: 0;
+}
+.SizeModalContent .close,
+.modal-content .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  cursor: pointer;
+}
+.SizeModalContent,
+.modal-content label {
+  display: block;
+  margin: 10px 0 5px;
+}
+
+
+
+.textArea,
+.input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+  
+.buttonContainer{
+  width: 100%;
+  text-align: right;
+}
+
+
+
+.SizeModalContent input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  text-align: center;
+}
+
+.SizeModalContent {
+background-color: #fff;
+padding: 20px;
+border-radius: 8px;
+width: 25rem;
+height: 13rem;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+position: relative;
+display: flex;
+flex-direction: column;
+align-items: center;
+}
+
+
+
+
+
+
+
+
+.folders-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem; 
+    margin-left: 5rem;
+    margin-top: 2.5rem;
+    width: 85%;
+  }
+  
+  .folder {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 10rem; 
+    text-align: center;
+    transition: all .2s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .folder-icon {
+    display: flex;
+    justify-content: center;
+
+  }
+  
+  .folder-name {
+    margin-bottom: 10px;
+    max-width: 9rem; 
+    text-align: center;
+    word-wrap: break-word;
+  }
+  
+  .dropdown {
+    position: absolute;
+    top: 0; 
+    right: 5px;
+    transform: none;
+    z-index: 999; /* Ustalamy wyższy z-index dla dropdownu */
+    pointer-events: auto;
+    width: 1.5rem;
+
+  }
+
+  
+  .dropdown-icon {
+    cursor: pointer;
+  }
+  
+  .dropdown-content {
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+  }
+  
+  .dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: #ddd;
+  }
+  
+  
+  .show {
+    display: block;
+  }
+
+  .logo {
+    max-height: 90px;
+    max-width: 100%;
+    height: auto;
+}
+
+.ikonname{
+    transition: all .2s ease-in-out;
+}
+
+.ikonname:hover{
+transform: scale(1.1);
+}
+
+
+.folders-row{
+  display: flex;
+  flex-direction: row;
+  
+}
+
+.path{
+  display: flex;
+  flex-direction: row;
+}
+
+.new{
+  display: flex;
+  align-items: center;
+  padding: 13px;
+  border-radius: 15px;
+  background-color: gray;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: auto;
+  margin-right: 3rem;
+  margin-top: 1rem;
+  position: relative;
+}
+
+.new:hover{
+  background-color: rgb(172, 172, 172);
+}

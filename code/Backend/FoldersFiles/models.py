@@ -16,6 +16,9 @@ class Folder(models.Model):
     def __str__(self):
         return self.name
     
+    class Meta:
+        ordering=['id']
+    
 
 def upload_to(instance, filename):
     folder_name = slugify(instance.folder.name)
@@ -43,3 +46,6 @@ class File(models.Model):
     
     def __str__(self):
         return self.name
+    
+    class Meta:
+        ordering=['id']
