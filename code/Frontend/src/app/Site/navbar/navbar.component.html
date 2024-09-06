@@ -5,14 +5,14 @@
             <img src="assets/WebImages/logo.png" alt="Logo" class="logo" />
           </a>
     </div>
-    <div *ngIf="user ;else notLogged" class="flex row-auto space-x-10" style="align-items: center; padding-right: 2vh;">
+    <div *ngIf="user ;else notLogged" class="flex row-auto space-x-10" style="align-items: center;text-align: center; padding-right: 2vh; ">
         <p>Logged as {{user.email}}</p>
         <button (click)="logout()" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"> Logout </button>
     </div>
 
     <ng-template #notLogged >
         <div style="padding-right: 4vh;">
-            <button (click)="login()" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"> Login </button>
+            <button routerLink="/login" class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"> Login </button>
         </div>
     </ng-template> 
 </div>

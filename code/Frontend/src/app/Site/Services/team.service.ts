@@ -50,4 +50,14 @@ export class TeamService {
     }))
   }
 
+  deleteTeam(team_id:number){
+    let headers = this.Auth.setHeaders();
+
+    return this.http.delete(`${this.baseURL}${team_id}/`, {headers})
+    .pipe(catchError(error =>{
+      console.log("Error deleting team:", error);
+      return throwError(error);
+    }))
+  }
+
 }

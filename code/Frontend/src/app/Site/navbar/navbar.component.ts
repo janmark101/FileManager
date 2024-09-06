@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthServiceService } from '../Services/auth-service.service';
 import { User } from '../Models/Models';
+import { Subscription } from 'rxjs';
+import { SiteService } from '../Services/site.service';
 
 
 @Component({
@@ -12,32 +14,19 @@ export class NavbarComponent implements OnInit{
 
   user: any;
 
-
-  constructor (private Auth:AuthServiceService) {}
+  subscription: Subscription = new Subscription();
+  
+  constructor (private Auth:AuthServiceService,private SiteService:SiteService) {}
 
   ngOnInit(): void {
     this.user = this.Auth.getUser();
-    
+    this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
+      this.ngOnInit();
+    });
+
   }
 
-  login(){
 
-    let data = {
-      "username" : 'jmark',
-      "password" : "123"
-    }
-
-    this.Auth.Login(data).subscribe(
-      (data: any) => {
-        console.log(data)
-        localStorage.setItem('User', JSON.stringify(data.user))
-        this.ngOnInit();
-      },
-      error => {
-        console.log(error.error)
-      }
-    );
-  }
 
   logout(){
     this.Auth.Logout().subscribe(
@@ -45,10 +34,15 @@ export class NavbarComponent implements OnInit{
         console.log(data)
         localStorage.removeItem('User')
         this.ngOnInit();
+        this.SiteService.callNgOnInit();
       },
       error => {
         console.log(error.error)
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
   }
 }
