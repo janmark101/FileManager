@@ -1,10 +1,14 @@
-import { Component, OnInit, Type } from '@angular/core';
+import { Component, HostListener, OnInit, Type } from '@angular/core';
 import { SiteService } from '../Services/site.service';
 import { take } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { Folder, Team } from '../Models/Models';
-
+import {
+  ConfirmBoxEvokeService,
+  
+} from '@costlydeveloper/ngx-awesome-popup';
+import { NgForm } from '@angular/forms';
 
 @Component({
   selector: 'app-team',
@@ -22,31 +26,39 @@ export class TeamComponent implements OnInit{
     user : 0
   }
 
-
+  path = [];
 
   backIcon = faChevronLeft;
   currentPath: string[] = [];
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router) {}
+
+  isAddFolderOpen : boolean = false;
+  
+  draggedFileFolder: any;
+  isRenameOpen = false;
+  selected_file_folder : Folder | any
+
+  isDropdownFolderOpen: boolean[] = [];
+  isDropdownAddOpen : boolean = false;
+  team_id : number = -1
+
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params=>{
-      const team_id = Number(params.get('id'))
+      this.team_id = Number(params.get('id'))
       
-      if (team_id)
-        this.fetchFolders(team_id);
+      if (this.team_id)
+        this.fetchFolders(this.team_id);
     })
 
     this.route.params.subscribe(params => {
       this.currentPath = this.buildPath(params['id']);
     });
-
-    console.log(this.currentPath);
     
   }
 
   buildPath(initialId: string): string[] {
-    // Rozpocznij ścieżkę od initialId
-    return [initialId];
+    return [initialId]; 
   }
 
   fetchFolders(id:number){
@@ -64,5 +76,118 @@ export class TeamComponent implements OnInit{
 
     this.router.navigate([`/teams`, ...this.currentPath]);
   }
+
+
+  onDragStart(event: DragEvent, obj: Folder) {
+    this.draggedFileFolder = obj;
+    event.dataTransfer?.setData('text/plain', obj.name);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault(); 
+  }
+
+  onDrop(event: DragEvent, folder: Folder | any) {
+    event.preventDefault(); 
+
+    if (this.draggedFileFolder.id != folder.id)
+      this.move_folder(folder.id)
+  }
+
+  move_folder(folderId:number){
+    if (this.draggedFileFolder) {
+      this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
+        this.ngOnInit();
+        this.draggedFileFolder = null;   
+      },(error)=>{
+        console.error(error);
+        this.draggedFileFolder = null;
+      })
+    }
+  }
+
+
+
+  RenameFolder(folder:Folder){
+    this.closeAllDropdowns();
+    this.selected_file_folder = folder
+    this.isRenameOpen = true
+  }
+
+  DeleteFolder(folderId:number){
+    this.closeAllDropdowns();
+    this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
+    .subscribe(resp => {
+      if (resp.success===true) {
+        this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
+          this.ngOnInit();
+        },(error) =>{
+          console.error(error);
+        })          
+      }
+    });
+
+  }
+
+  closePanel(){
+    this.isRenameOpen = false;
+    this.isAddFolderOpen = false;
+  }
+
+  onRenameFileFolder(form :NgForm, file_name : string,fileId:number){
+    this.closeAllDropdowns();
+    
+      this.SiteService.renameFolder(form.value['edit-name'],fileId).pipe(take(1)).subscribe((data:unknown) =>{
+        this.selected_file_folder.name = form.value['edit-name']
+        this.closePanel();
+      },(error) =>{
+        console.error(error);
+        
+      })
+  }
+
+
+
+toggleDropdownFolder(index: number) {
+  this.closeAllDropdowns()
+  this.isDropdownFolderOpen[index] = !this.isDropdownFolderOpen[index];
+}
+
+toggleDropDownAdd(){
+  this.closeAllDropdowns()
+  this.isDropdownAddOpen = !this.isDropdownAddOpen;
+  console.log(this.isDropdownAddOpen);
+  
+}
+
+closeAllDropdowns() {
+  this.isDropdownFolderOpen = [];
+  this.isDropdownAddOpen = false;
+}
+
+@HostListener('document:click', ['$event'])
+closeDropdownOnClickOutside(event: MouseEvent) {
+  if (!(event.target as HTMLElement).closest('.dropdown') && !(event.target as HTMLElement).closest('.new')) {
+    this.closeAllDropdowns();
+  }
+}
+
+
+
+addFolder(){
+  this.closeAllDropdowns();
+  this.isAddFolderOpen = true
+}
+
+onAddFolder(form :NgForm){
+  
+  this.SiteService.addFolder(form.value['folder-name'],null,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
+    this.ngOnInit();
+    this.closePanel();
+  },(error) =>{
+    console.error(error);
+    
+  })
+}
 
 }

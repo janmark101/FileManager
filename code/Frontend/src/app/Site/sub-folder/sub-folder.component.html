@@ -7,34 +7,63 @@
 <hr >
 
 <div class="path ml-5 gap-1">
-    
-<div *ngFor="let _ of path;let i =index" class="path">
+<div *ngFor="let _ of path;let i =index" class="path ">
     <p style="font-size: 1.3rem;" class="mt-3 link" (click)="navigateToUrl(_)" (dragover)="onDragOver($event)" (drop)="onDrop($event,i)" *ngIf="_!='/' && i>0"> {{_}}</p>
     <p style="font-size: 1.3rem;" class="mt-3 link" (click)="navigateToUrl(_)" *ngIf="_=='/' || i==0"> {{_}}</p>
     <p style="font-size: 1.3rem;" class="mt-3 ml-2"> /</p>
 </div>
+
+<div class="new" (click)="toggleDropDownAdd()">
+  <i class="fa-solid fa-plus " style="font-size: 1.5rem;"></i>
+  <a class="ml-2">New </a>
+  <div class="dropdown mr-28 mt-10"   >
+    <div class="dropdown-content" [ngClass]="{'show': isDropdownAddOpen}" *ngIf="isDropdownAddOpen">
+      <a (click)="addFolder()">New Folder</a>
+      <a (click)="addFile()">Add File</a>
+    </div>
+  </div>
+</div>
 </div>
 
-<div class="flex row-auto gap-6 justify-start ml-20 mt-10">
-  <div *ngFor="let folder of Folders" class="folders " (dragover)="onDragOver($event)" (drop)="onDrop($event,folder)">
-    <a (click)="navigateToSubfolder(folder.id)" class="">
-        <img src="assets/WebImages/icons/folder.png" alt="Logo" class="logo" />
+<div class="folders-container ">
+  <div *ngFor="let folder of Folders; let i = index" class="folder" 
+       (dragover)="onDragOver($event)" (drop)="onDrop($event, folder)" 
+       (dragstart)="onDragStart($event, folder)" draggable="true">
+    
+    <!-- Ikona folderu -->
+     <div class="ikonname">
+      <a (click)="navigateToSubfolder(folder.id)" class="folder-icon">
+        <img src="assets/WebImages/icons/folder.png" alt="Folder Icon" class="logo" />
       </a>
-    <a class="fname">{{folder.name}}</a>
-</div>
+  
+      <!-- Nazwa folderu -->
+      <a class="folder-name">{{ folder.name }}</a>
+     </div>
 
-<div *ngFor="let file of Files;let i=index" class="folders" (dragstart)="onDragStart($event,file)" draggable="true">
-  <a >
+    <!-- Dropdown menu -->
+    <div class="dropdown" (click)="toggleDropdownFolder(i)">
+      <i class="fa-solid fa-ellipsis-vertical dropdown-icon" style="font-size: 1.5rem;"></i>
+      <div class="dropdown-content" [ngClass]="{'show': isDropdownFolderOpen[i]}">
+        <a (click)="RenameFolder(folder)">Rename</a>
+        <a (click)="DeleteFolder(folder.id)">Delete</a>
+      </div>
+    </div>
+  </div>
+
+
+<div *ngFor="let file of Files;let i=index" class="folder" (dragstart)="onDragStart($event,file)" draggable="true">
+  <div class="ikonname">
+  <a  class="folder-icon">
     <img [src]="getIconUrl(file)" alt="{{file.name}}" class="logo" />
     </a>
-  <a class="fname">{{file.name}}</a>
-  
-  <div class="dropdown" (click)="toggleDropdown(i)">
-    <i class="fa-solid fa-ellipsis-vertical"></i>
-    <div class="dropdown-content" [ngClass]="{'show': isDropdownOpen[i]}">
+    <a class="folder-name">{{ file.name }}</a>
+  </div>
+  <div class="dropdown" (click)="toggleDropdownFile(i)">
+    <i class="fa-solid fa-ellipsis-vertical dropdown-icon" style="font-size: 1.5rem;"></i>
+    <div class="dropdown-content" [ngClass]="{'show': isDropdownFileOpen[i]}">
       <a [href]="getDownloadUrl(file.file)" [attr.download]="file.name">Download</a>
-      <a (click)="Rename(file)">Rename</a>
-      <a (click)="Delete(file.id)">Delete</a>
+      <a (click)="RenameFile(file)">Rename</a>
+      <a (click)="DeleteFile(file.id)">Delete</a>
     </div>
   </div>
 
@@ -49,8 +78,8 @@
   <div class="SizeModalContent">
       <span class="close" (click)="closeRenamePanel()">&times;</span>
       <p class="text-2xl font-bold ">Change name</p>
-      <form (ngSubmit)="onRenameFile(rename,selected_file.name,selected_file.id)" class="formContainer mt-4"  #rename="ngForm">
-        <input class="input" type="text" id="edit-name" [ngModel]="selected_file.name" name="edit-name"
+      <form (ngSubmit)="onRenameFileFolder(rename,selected_file_folder.name,selected_file_folder.id)" class="formContainer mt-4"  #rename="ngForm">
+        <input class="input" type="text" id="edit-name" [ngModel]="selected_file_folder.name" name="edit-name"
             required />
           <div class="buttonContainer mt-4">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closeRenamePanel()">Cancel</button>
@@ -59,3 +88,26 @@
       </form>
   </div>
 </div>
+
+<div class="modal" *ngIf="isAddFolderOpen">
+  <div class="SizeModalContent">
+      <span class="close" (click)="closePanel()">&times;</span>
+        <p class="text-2xl font-bold ">New folder</p>
+        <form (ngSubmit)="onAddFolder(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
+          <input class="input" type="text" id="folder-name" placeholder="Folder name" name="folder-name" ngModel
+            required />
+          <div class="buttonContainer mt-4">
+            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
+              <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+
+<input
+  type="file"
+  (change)="onFileSelected($event)"
+  #fileInput
+  style="display: none"
+/>

@@ -23,3 +23,7 @@ class FolderSerializer(serializers.ModelSerializer):
             return FolderSerializer(obj.parent_folder).data
         return None
 
+class FolderAddSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Folder
+        fields = '__all__'

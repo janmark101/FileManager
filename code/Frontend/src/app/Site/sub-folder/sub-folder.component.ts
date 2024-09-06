@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { take } from 'rxjs';
 import { Team, File_,Folder, Response } from '../Models/Models';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,6 +34,10 @@ export class SubFolderComponent {
   path_ids : string[] = []
 
   currentPath: string[] = [];
+  isDropdownAddOpen : boolean = false;
+  isAddFolderOpen : boolean = false;
+
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
  
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService) {}
 
@@ -59,12 +63,8 @@ export class SubFolderComponent {
       this.Folders = data.folders;
       this.accTeam = data.team;
       this.Files = data.files;
-      console.log(data);
-      
       this.path = data.folder_names_ids[0];
       this.path_ids = data.folder_names_ids[1]
-      console.log(data);
-      
       this.makePath();
       
     },(error:any) =>{
@@ -110,21 +110,41 @@ export class SubFolderComponent {
       return `assets/WebImages/icons/file.png`
     }
 
-    isDropdownOpen: boolean[] = [];
+    isDropdownFileOpen: boolean[] = [];
+    isDropdownFolderOpen: boolean[] = [];
 
-    toggleDropdown(index: number) {
+    toggleDropdownFile(index: number) {
       this.closeAllDropdowns()
-      this.isDropdownOpen[index] = !this.isDropdownOpen[index];
+      this.isDropdownFileOpen[index] = !this.isDropdownFileOpen[index];
+    }
+
+    toggleDropdownFolder(index: number) {
+      this.closeAllDropdowns()
+      this.isDropdownFolderOpen[index] = !this.isDropdownFolderOpen[index];
+    }
+
+    toggleDropDownAdd(){
+      this.closeAllDropdowns()
+      this.isDropdownAddOpen = !this.isDropdownAddOpen;
+      console.log(this.isDropdownAddOpen);
+      
     }
 
     closeAllDropdowns() {
-      this.isDropdownOpen = [];
+      this.isDropdownFileOpen = [];
+      this.isDropdownFolderOpen = [];
+      this.isDropdownAddOpen = false;
+    }
+
+    closePanel(){
+      this.isRenameOpen = false;
+      this.isAddFolderOpen = false;
     }
   
 
     @HostListener('document:click', ['$event'])
     closeDropdownOnClickOutside(event: MouseEvent) {
-      if (!(event.target as HTMLElement).closest('.dropdown')) {
+      if (!(event.target as HTMLElement).closest('.dropdown') && !(event.target as HTMLElement).closest('.new')) {
         this.closeAllDropdowns();
       }
     }
@@ -135,20 +155,40 @@ export class SubFolderComponent {
     }
     
     isRenameOpen = false;
-    selected_file : File_ | any
+    selected_file_folder : File_ | Folder | any
     selected_file_ext : string = '';
 
-    Rename(file:File_){
-      this.selected_file = file
+    RenameFile(file:File_){
+      this.selected_file_folder = file
       this.isRenameOpen = true
     }
 
-    Delete(fileId:number){
+    DeleteFile(fileId:number){
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
       .subscribe(resp => {
         if (resp.success===true) {
           this.SiteService.deleteFile(fileId).pipe(take(1)).subscribe((data:unknown) =>{
-            this.Files = this.Files.filter((item:any)=> item.id != fileId)
+            this.ngOnInit();
+          },(error) =>{
+            console.error(error);
+          })          
+        }
+      });
+
+    }
+
+
+    RenameFolder(folder:Folder){
+      this.selected_file_folder = folder
+      this.isRenameOpen = true
+    }
+
+    DeleteFolder(folderId:number){
+      this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
+      .subscribe(resp => {
+        if (resp.success===true) {
+          this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
+            this.ngOnInit();
           },(error) =>{
             console.error(error);
           })          
@@ -161,24 +201,37 @@ export class SubFolderComponent {
       this.isRenameOpen = false;
     }
 
-    onRenameFile(form :NgForm, file_name : string,fileId:number){
+    onRenameFileFolder(form :NgForm, file_name : string,fileId:number){
+
+      if (this.selected_file_folder.parent_folder){
+        this.SiteService.renameFolder(form.value['edit-name'],fileId).pipe(take(1)).subscribe((data:unknown) =>{
+          this.selected_file_folder.name = form.value['edit-name']
+          this.closeRenamePanel();
+        },(error) =>{
+          console.error(error);
+          
+        })
+      }
+      else{
+
       const fileExtension = file_name.split('.').pop();
       let new_name = `${form.value['edit-name']}.${fileExtension}`
       
       this.SiteService.renameFile(new_name,fileId).pipe(take(1)).subscribe((data:unknown) =>{
-        this.selected_file.name = new_name
+        this.selected_file_folder.name = new_name
         this.closeRenamePanel();
       },(error) =>{
         console.error(error);
         
       })
     }
+  }
 
-    draggedFile: any;
+    draggedFileFolder: any;
 
-  onDragStart(event: DragEvent, file: any) {
-    this.draggedFile = file;
-    event.dataTransfer?.setData('text/plain', file.name);
+  onDragStart(event: DragEvent, obj: Folder | File_) {
+    this.draggedFileFolder = obj;
+    event.dataTransfer?.setData('text/plain', obj.name);
   }
 
   onDragOver(event: DragEvent) {
@@ -198,18 +251,81 @@ export class SubFolderComponent {
     else{
       folder_.id = folder.id
     }
-    
 
-    if (this.draggedFile) {
-      this.SiteService.moveFile(folder_.id,this.draggedFile.id).pipe(take(1)).subscribe((data:unknown)=>{
+    if (this.draggedFileFolder.parent_folder) {
+      if(this.draggedFileFolder.id != folder_.id)
+        this.move_folder(folder_.id);
+    }
+    else{
+      this.move_file(folder_.id);
+    }
+  }
+
+
+  move_file(folderId:number){
+    if (this.draggedFileFolder) {
+      this.SiteService.moveFile(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
         this.ngOnInit();
-        this.draggedFile = null;   
+        this.draggedFileFolder = null;   
       },(error)=>{
         console.error(error);
-        this.draggedFile = null;
+        this.draggedFileFolder = null;
       })
     }
   }
+
+  move_folder(folderId:number){
+    if (this.draggedFileFolder) {
+      this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
+        this.ngOnInit();
+        this.draggedFileFolder = null;   
+      },(error)=>{
+        console.error(error);
+        this.draggedFileFolder = null;
+      })
+    }
+  }
+
+  addFolder(){
+    this.closeAllDropdowns();
+    this.isAddFolderOpen = true
+  }
+  
+  onAddFolder(form :NgForm){
+    let team_id = Number(this.currentPath[2])
+    let parent_folder = Number(this.currentPath.at(-1))
+    
+    
+    this.SiteService.addFolder(form.value['folder-name'],parent_folder,team_id).pipe(take(1)).subscribe((data:unknown) =>{
+      this.ngOnInit();
+      this.closePanel();
+    },(error) =>{
+      console.error(error);
+      
+    })
+   }
+
+   addFile(){
+    this.fileInput.nativeElement.click();
+   }
+
+   onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      let file = input.files[0]; 
+      let folder_id = Number(this.currentPath.at(-1))
+      const formData = new FormData();
+      formData.append('file',file)
+        this.SiteService.addFile(formData,folder_id).pipe(take(1)).subscribe((data:unknown)=>{
+          this.ngOnInit();
+          
+        },(error: Error) => {
+          console.error(error);
+          
+        })
+    }
+  }
+
 
 }
 
