@@ -8,7 +8,7 @@ import { NavbarComponent } from './Site/navbar/navbar.component';
 import { HomePageComponent } from './Site/home-page/home-page.component';
 import { TeamComponent } from './Site/team/team.component';
 import { SubFolderComponent } from './Site/sub-folder/sub-folder.component';
-// import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';  
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
 import {
   NgxAwesomePopupModule,
@@ -19,6 +19,8 @@ import {
 import { TeamSettingsComponent } from './Site/team-settings/team-settings.component';
 import { LoginComponent } from './Site/login/login.component';
 import { RegisterComponent } from './Site/register/register.component';
+import { ToastrModule } from 'ngx-toastr';
+
 
 @NgModule({
   declarations: [
@@ -40,7 +42,9 @@ import { RegisterComponent } from './Site/register/register.component';
     NgxAwesomePopupModule.forRoot(), 
     DialogConfigModule.forRoot(), 
     ConfirmBoxConfigModule.forRoot(), 
-    ToastNotificationConfigModule.forRoot() 
+    ToastNotificationConfigModule.forRoot() ,
+    BrowserAnimationsModule,
+    ToastrModule.forRoot()
   ],
   providers: [],
   bootstrap: [AppComponent]

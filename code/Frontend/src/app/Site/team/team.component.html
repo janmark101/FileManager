@@ -73,7 +73,7 @@
       <form (ngSubmit)="onRenameFileFolder(rename,selected_file_folder.name,selected_file_folder.id)" class="formContainer mt-4"  #rename="ngForm">
         <input class="input" type="text" id="edit-name" [ngModel]="selected_file_folder.name" name="edit-name"
             required />
-          <div class="buttonContainer mt-4">
+          <div class="buttonContainer mt-1">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
               <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
           </div>
@@ -90,7 +90,7 @@
         <form (ngSubmit)="onAddFolder(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
           <input class="input" type="text" id="folder-name" placeholder="Folder name" name="folder-name" ngModel
             required />
-          <div class="buttonContainer mt-4">
+          <div class="buttonContainer mt-1">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
               <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
           </div>

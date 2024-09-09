@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, logout
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import  TokenAuthentication
 from django.shortcuts import get_object_or_404
-from .serializers import UserSerializer, TeamSerialzer
+from .serializers import UserSerializer, TeamSerialzer, RegisterUserSerializer
 from django.contrib.auth.models import User
 from .models import Team
 from django.db.models import Q
@@ -41,6 +41,17 @@ class Logout(APIView):
         token = get_object_or_404(Token,user=request.user)
         token.delete()
         return Response({'message':'Logged out succesfully!'},status=status.HTTP_200_OK)
+    
+    
+class Register(APIView):
+    permission_classes=[AllowAny]
+    
+    def post(self,request):
+        user = RegisterUserSerializer(data=request.data)
+        if user.is_valid():
+            user.save()
+            return Response(user.data)
+        return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TeamView(APIView):
