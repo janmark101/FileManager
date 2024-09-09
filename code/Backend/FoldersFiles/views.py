@@ -62,6 +62,12 @@ class FoldersForTeamView(APIView):
     def post(self,request,id):
         team = get_object_or_404(Team,id=id)
         
+        if Folder.objects.filter(team=team,name=request.data.get('name')).exists() and request.data.get('parent_folder') is None:
+            return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        
+        if Folder.objects.filter(team=team,name=request.data.get('name'),parent_folder=request.data.get('parent_folder')).exists() and request.data.get('parent_folder') is not None:
+            return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        
         folder = FolderAddSerializer(data=request.data)
         if folder.is_valid():
             folder.save()

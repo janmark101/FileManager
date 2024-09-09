@@ -50,4 +50,14 @@ export class AuthServiceService {
         throw error;
       }));
   }
+
+  Register(data:any){
+    let headers = this.setHeaders();
+
+    return this.http.post<User>(`${this.baseURL}register/`,data ,{headers})
+      .pipe(catchError(error => {
+        console.error('Error while logging in:', error);
+        throw error;
+      }));
+  }
 }

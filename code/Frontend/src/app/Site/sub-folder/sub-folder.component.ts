@@ -8,6 +8,8 @@ import {
   ConfirmBoxEvokeService,
   
 } from '@costlydeveloper/ngx-awesome-popup';
+import { ToastrService } from 'ngx-toastr';
+
 
 
 
@@ -40,7 +42,7 @@ export class SubFolderComponent {
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
  
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService) {}
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
   ngOnInit(): void {
     this.Folders = []
@@ -121,7 +123,6 @@ export class SubFolderComponent {
     toggleDropDownAdd(){
       this.closeAllDropdowns()
       this.isDropdownAddOpen = !this.isDropdownAddOpen;
-      console.log(this.isDropdownAddOpen);
       
     }
 
@@ -164,6 +165,7 @@ export class SubFolderComponent {
         if (resp.success===true) {
           this.SiteService.deleteFile(fileId).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
+            this.toast.success('File deleted!')
           },(error) =>{
             console.error(error);
           })          
@@ -184,6 +186,7 @@ export class SubFolderComponent {
         if (resp.success===true) {
           this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
+            this.toast.success('Folder deleted!')
           },(error) =>{
             console.error(error);
           })          
@@ -293,8 +296,9 @@ export class SubFolderComponent {
     this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
       this.ngOnInit();
       this.closePanel();
+      this.toast.success('Folder created!')
     },(error) =>{
-      console.error(error);
+      this.toast.error(error.error.Error);
       
     })
    }
@@ -312,7 +316,7 @@ export class SubFolderComponent {
       formData.append('file',file)
         this.SiteService.addFile(formData,folder_id).pipe(take(1)).subscribe((data:unknown)=>{
           this.ngOnInit();
-          
+          this.toast.success('File added!')
         },(error: Error) => {
           console.error(error);
           

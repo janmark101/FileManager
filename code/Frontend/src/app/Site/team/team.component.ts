@@ -9,6 +9,8 @@ import {
   
 } from '@costlydeveloper/ngx-awesome-popup';
 import { NgForm } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+
 
 @Component({
   selector: 'app-team',
@@ -41,7 +43,7 @@ export class TeamComponent implements OnInit{
   isDropdownAddOpen : boolean = false;
   team_id : number = -1
 
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService) {}
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params=>{
@@ -121,8 +123,10 @@ export class TeamComponent implements OnInit{
       if (resp.success===true) {
         this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
           this.ngOnInit();
+          this.toast.success('Folder deleted!')
         },(error) =>{
           console.error(error);
+          
         })          
       }
     });
@@ -184,8 +188,9 @@ onAddFolder(form :NgForm){
   this.SiteService.addFolder(form.value['folder-name'],null,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
     this.ngOnInit();
     this.closePanel();
+    this.toast.success('Folder created!')
   },(error) =>{
-    console.error(error);
+    this.toast.error(error.error.Error);
     
   })
 }

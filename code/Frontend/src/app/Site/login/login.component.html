@@ -3,7 +3,7 @@
 <!-- <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> -->
 <!------ Include the above in your HEAD tag ---------->
 
-<!-- <body style="background-color: rgb(255, 255, 255);">
+<body style="background-color: rgb(255, 255, 255);">
     <div style="padding-top:5%;" id="login">
         <div class="container">
             <div id="login-row" class="row justify-content-center align-items-center">
@@ -32,27 +32,5 @@
             </div>
         </div>
     </div>
-</body> --> 
-
-<div class="parentContainer" >
-    <div  class="w-full max-w-md mx-auto mt-12">
-        <p class="text-center text-black text-2xl font-medium my-10">Logowanie</p>
-        <form (ngSubmit)="onSubmit(form)" #form="ngForm" class="loginContainer bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 ">
-            <div class="flex flex-col space-y-4">
-                <input type="email" placeholder="email" ngModel name="username" id="email"
-                    class=" p-4 text-sm border border-gray-300 rounded" required />
-                <input type="password" placeholder="password" ngModel name="password" id="password"
-                    class="p-4 text-sm border border-gray-300 rounded" required />
-                <p *ngIf="error != null" class="text-red-500 text-base pl-1">{{error}}</p>
-
-            </div>
-            <div class="flex justify-center flex-col my-10 gap-5">
-                <button
-                    class="self-center w-32 rounded left-10 bg-white px-6 py-2 border-double border-4  border-gray-400 shadow-md hover:bg-slate-100 hover:scale-105 transition-transform duration-300">Zaloguj</button>
-                <p class="text-center text-gray-700">Nie masz konta? <a href="register" class="text-blue-500">Zrejestruj
-                        się</a></p>
-            </div>
-        </form>
-    </div>
-</div>
+</body> 
 
