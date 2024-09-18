@@ -8,5 +8,6 @@ urlpatterns = [
     path('logout/',views.Logout.as_view()),
     path('teams/',views.TeamView.as_view()),
     path('teams/<int:id>/',views.TeamObjectView.as_view()),
-    path('register/',views.Register.as_view())
+    path('register/',views.Register.as_view()),
+
 ]

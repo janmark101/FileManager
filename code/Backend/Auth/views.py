@@ -12,6 +12,7 @@ from django.contrib.auth.models import User
 from .models import Team
 from django.db.models import Q
 from itertools import chain
+# from Backend.settings import KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,KEYCLOAK_REALM,KEYCLOAK_SERVER_URL
 
 class Login(APIView):
     permission_classes = [AllowAny]
@@ -55,10 +56,11 @@ class Register(APIView):
 
 
 class TeamView(APIView):
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
     
     def get(self,request):
+        print(request.user)
+        request.user.id=1
         teams_owner = Team.objects.filter(team_owner=request.user.id)
         teams_part = Team.objects.filter(users__id=request.user.id)
         teams = list(chain(teams_owner, teams_part))
@@ -74,8 +76,7 @@ class TeamView(APIView):
     
     
 class TeamObjectView(APIView):
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
     
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
@@ -86,3 +87,5 @@ class TeamObjectView(APIView):
         team = get_object_or_404(Team,id=id)
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    

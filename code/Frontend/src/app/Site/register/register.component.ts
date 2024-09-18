@@ -34,36 +34,49 @@ export class RegisterComponent {
       "username":form.value.username
     }
 
-    this.authService.Register(data).subscribe(
-      (response: any) => {
-        this.toast.success('Registered Succesfully!','Register')
-        form.reset();
 
-      },
-      error => {
-        console.error('Error:', error.error);
-
-        if (error.error.password){
-          this.error_password = error.error.password
-        }
-        else{
-          this.error_password = null
-        }
-        if (error.error.email){
-          this.error_email = error.error.email
-        }
-        else{
-          this.error_email = null
-        }
-        if (error.error.username){
-          this.error_username = error.error.username
-        }
-        else{
-          this.error_username = null
-        }
-
+    this.authService.LoginKeyCloak(data).subscribe(
+      (response:any) => {
+        console.log(response);
+        
+      }, 
+      error =>{
+        console.error(error);
+        
       }
-    );
+    )
+
+
+    // this.authService.Register(data).subscribe(
+    //   (response: any) => {
+    //     this.toast.success('Registered Succesfully!','Register')
+    //     form.reset();
+
+    //   },
+    //   error => {
+    //     console.error('Error:', error.error);
+
+    //     if (error.error.password){
+    //       this.error_password = error.error.password
+    //     }
+    //     else{
+    //       this.error_password = null
+    //     }
+    //     if (error.error.email){
+    //       this.error_email = error.error.email
+    //     }
+    //     else{
+    //       this.error_email = null
+    //     }
+    //     if (error.error.username){
+    //       this.error_username = error.error.username
+    //     }
+    //     else{
+    //       this.error_username = null
+    //     }
+
+    //   }
+    // );
   }
 
 }

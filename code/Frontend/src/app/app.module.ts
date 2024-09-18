@@ -1,7 +1,7 @@
-import { NgModule } from '@angular/core';
+import { NgModule,APP_INITIALIZER  } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 
-import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './Site/navbar/navbar.component';
@@ -20,6 +20,10 @@ import { TeamSettingsComponent } from './Site/team-settings/team-settings.compon
 import { LoginComponent } from './Site/login/login.component';
 import { RegisterComponent } from './Site/register/register.component';
 import { ToastrModule } from 'ngx-toastr';
+import { initializeKeycloak } from 'src/keycloak-init'; 
+import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+
 
 
 @NgModule({
@@ -44,9 +48,25 @@ import { ToastrModule } from 'ngx-toastr';
     ConfirmBoxConfigModule.forRoot(), 
     ToastNotificationConfigModule.forRoot() ,
     BrowserAnimationsModule,
-    ToastrModule.forRoot()
+    ToastrModule.forRoot(),
+    KeycloakAngularModule,  
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeKeycloak,
+      multi: true,
+      deps: [KeycloakService],
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: KeycloakBearerInterceptor,
+      multi: true
+    },
+    provideHttpClient(
+      withInterceptorsFromDi()
+    )
+],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

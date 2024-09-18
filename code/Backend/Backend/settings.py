@@ -128,6 +128,9 @@ REST_FRAMEWORK = {
 }
 
 
+
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -155,3 +158,5 @@ MEDIA_URL = 'Folders/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+

@@ -3,6 +3,8 @@ import { AuthServiceService } from '../Services/auth-service.service';
 import { User } from '../Models/Models';
 import { Subscription } from 'rxjs';
 import { SiteService } from '../Services/site.service';
+import { KeyCloakService } from '../Services/key-cloak.service';
+import { KeycloakService } from 'keycloak-angular';
 
 
 @Component({
@@ -16,33 +18,26 @@ export class NavbarComponent implements OnInit{
 
   subscription: Subscription = new Subscription();
   
-  constructor (private Auth:AuthServiceService,private SiteService:SiteService) {}
+  constructor (private keycloak:KeyCloakService,private SiteService:SiteService) {}
 
   ngOnInit(): void {
-    this.user = this.Auth.getUser();
-    this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
-      this.ngOnInit();
-    });
+    this.user = this.keycloak.Logged();
+    console.log(this.user)
+    // this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
+    //   this.ngOnInit();
+    // });
 
   }
 
-
+  login(){
+    this.keycloak.Login();
+  }
 
   logout(){
-    this.Auth.Logout().subscribe(
-      (data: any) => {
-        console.log(data)
-        localStorage.removeItem('User')
-        this.ngOnInit();
-        this.SiteService.callNgOnInit();
-      },
-      error => {
-        console.log(error.error)
-      }
-    );
+    this.keycloak.Logout();
   }
 
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
+  // ngOnDestroy(): void {
+  //   this.subscription.unsubscribe();
+  // }
 }
