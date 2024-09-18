@@ -14,7 +14,7 @@ import { RegisterComponent } from './Site/register/register.component';
     {path:'register',component:RegisterComponent},
     {path:'teams/:id',component:TeamComponent},
     {path:'teams/:id/settings',component:TeamSettingsComponent},
-    {path:'**', component:SubFolderComponent},
+    // {path:'**', component:SubFolderComponent},
 ];
 
 @NgModule({

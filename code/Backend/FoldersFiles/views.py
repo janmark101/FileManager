@@ -3,7 +3,7 @@ from .models import File,Folder
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import File, Folder
 from .serializers import FileSerializer, FolderSerializer, FolderAddSerializer
 from rest_framework.authentication import TokenAuthentication
@@ -28,8 +28,7 @@ def download_file(request, file_path):
 
 
 class UploadFileView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
 
     def post(self, request,id):
         folder = get_object_or_404(Folder,id=id)
@@ -47,8 +46,7 @@ class UploadFileView(APIView):
     
     
 class FoldersForTeamView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
 
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
@@ -75,8 +73,7 @@ class FoldersForTeamView(APIView):
         return Response(folder.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class SubFoldersView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
     
     def get(self,request,tid,fid):
         team = get_object_or_404(Team,id=tid)
@@ -108,8 +105,7 @@ class SubFoldersView(APIView):
         
 
 class FileObjectView(APIView):
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
     
     def delete(self,request,id):
         file = get_object_or_404(File,id=id)
@@ -132,8 +128,7 @@ class FileObjectView(APIView):
     
     
 class FolderObjectView(APIView):
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
+    permission_classes=[AllowAny]
     
     def delete(self,request,id):
         folder = get_object_or_404(Folder,id=id)

@@ -21,6 +21,8 @@
     "@costlydeveloper/ngx-awesome-popup": "^3.2.2",
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "keycloak-angular": "^16.0.1",
+    "keycloak-js": "^25.0.5",
     "ngx-toastr": "^19.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

@@ -19,6 +19,9 @@ code/Backend/.env
 
 /code/Backend/Folders
 
+keycloak
+./keycloak
+/keycloak
 
 # dependencies
 node_modules/
