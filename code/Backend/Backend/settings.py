@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'FoldersFiles.middleware.KeycloakMiddleware',
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -102,6 +104,17 @@ DATABASES = {
         "PORT": os.environ.get("PORT"),
     }
 }
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+KEYCLOAK_URL = 'http://localhost:8080'
+KEYCLOAK_REALM = "dive-dev"
+KEYCLOAK_CLIENT_ID = "angular-app"
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

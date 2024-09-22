@@ -2,6 +2,8 @@ version: "3.8"
 
 services:
   web:
+    networks:
+      - my-network
     build:
       context: .
     ports:
@@ -15,6 +17,8 @@ services:
       - postgres_db
 
   postgres_db:
+    networks:
+      - my-network
     image: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -25,3 +29,8 @@ services:
 
 volumes:
   postgres_data:
+
+
+networks:
+  my-network:
+    driver: bridge
