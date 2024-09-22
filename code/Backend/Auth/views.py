@@ -59,7 +59,8 @@ class TeamView(APIView):
     permission_classes=[AllowAny]
     
     def get(self,request):
-        print(request.user)
+        # print(request.headers)
+        # print(request.user_roles)
         request.user.id=1
         teams_owner = Team.objects.filter(team_owner=request.user.id)
         teams_part = Team.objects.filter(users__id=request.user.id)
