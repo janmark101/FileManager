@@ -54,6 +54,7 @@ export class HomePageComponent implements OnInit {
 
   openAddTeamPanel(){
     this.isAddTeamOpen = true
+    
   }
 
   closePanel(){

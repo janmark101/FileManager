@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate, logout
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.authentication import  TokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from .serializers import UserSerializer, TeamSerialzer, RegisterUserSerializer
 from django.contrib.auth.models import User
@@ -56,12 +57,8 @@ class Register(APIView):
 
 
 class TeamView(APIView):
-    permission_classes=[AllowAny]
     
     def get(self,request):
-        # print(request.headers)
-        # print(request.user_roles)
-        request.user.id=1
         teams_owner = Team.objects.filter(team_owner=request.user.id)
         teams_part = Team.objects.filter(users__id=request.user.id)
         teams = list(chain(teams_owner, teams_part))
