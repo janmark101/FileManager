@@ -56,10 +56,10 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    # 'FoldersFiles.middleware.KeycloakMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'FoldersFiles.middleware.KeycloakMiddleware',
 ]
 
 ROOT_URLCONF = 'Backend.urls'
@@ -86,28 +86,37 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("SQL_NAME"),
-        "USER": os.environ.get("SQL_USER"),
-        "PASSWORD": os.environ.get("SQL_PASSWORD"),
-        "HOST": os.environ.get("HOST"),
-        "PORT": os.environ.get("PORT"),
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": os.environ.get("SQL_NAME"),
+#         "USER": os.environ.get("SQL_USER"),
+#         "PASSWORD": os.environ.get("SQL_PASSWORD"),
+#         "HOST": os.environ.get("HOST"),
+#         "PORT": os.environ.get("PORT"),
+#     }
+# }
+
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ALGORITHM': 'RS256',
+    'SIGNING_KEY': None,
+    'VERIFYING_KEY': """
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqwL7pSIDs1TzHNdjrGbpT96Qj9AZs7XOGsM8tHPAEUtm9cg8WpjnANliRoBk15b4ViI2nzruUCeWd73KibFohSclwXp3//mgJupA/OcI3LK1kudRPCUK3IjO4wrChcDRaeYqBYEzMHj6hioyKJ0X39o6sQdPsqJS6IJm/zs8TzPJOPd7fxJUOHr4hoW61nlwW/Kioj/xdvpFY0AUmQjYiTE/Ll0sfIZdCQ25cDnc+D2MwbgCexkN6CQ8YU2mHo+HcR8ukwb1WvjTtwQ1skrD+ZrSAESn0faLvImCYuUloEneIYi42a9C1fxG55Ct096faNA8Vtp2BB1HKd5kAXNcnwIDAQAB
+    -----END PUBLIC KEY-----
+    """,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'sub',  # W Keycloak 'sub' to unikalny identyfikator użytkownika
+    'USER_ID_CLAIM': 'sub',
+    'TOKEN_LIFETIME': timedelta(minutes=5),
 }
 
 KEYCLOAK_URL = 'http://localhost:8080'
@@ -135,9 +144,12 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'Auth.KeycloakAuth.KeycloakAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 

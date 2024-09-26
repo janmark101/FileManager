@@ -1,6 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
+class UserProfile(models.Model):
+    keycloak_id = models.CharField(max_length=255,unique=True,null=False,blank=False)
+    user = models.OneToOneField(User,on_delete=models.CASCADE,null=True)
+
+    def __str__(self):
+        return self.user.username
+
 class Team(models.Model):
     name = models.CharField(max_length=255, null=False,blank=False)
     users = models.ManyToManyField(User,blank=True,related_name='teams')
@@ -12,4 +20,19 @@ class Team(models.Model):
     
     class Meta:
         ordering =['id']
-# Create your models here.
+
+
+class TeamRoles(models.Model):
+    
+    roles = [
+        ('manager','Manager'),
+        ('default','Default'),
+        ('admin','Admin')
+    ]
+    
+    team = models.ForeignKey(Team,on_delete=models.CASCADE)
+    user = models.ForeignKey(User,on_delete=models.CASCADE)
+    role = models.CharField(max_length=25,choices=roles,default=roles[1])
+    
+    def __str__(self):
+        return f"{self.team} | {self.role} for {self.user.username}"

@@ -18,11 +18,12 @@ export class NavbarComponent implements OnInit{
 
   subscription: Subscription = new Subscription();
   
-  constructor (private keycloak:KeyCloakService,private SiteService:SiteService) {}
+  constructor (private keycloak:KeyCloakService,private SiteService:SiteService,private keycloaksService:KeycloakService) {}
 
   ngOnInit(): void {
     this.user = this.keycloak.Logged();
     console.log(this.user)
+    console.log(this.keycloaksService.getKeycloakInstance().resourceAccess?.['angular-app']?.roles || [],'roles ');
     // this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
     //   this.ngOnInit();
     // });
