@@ -132,7 +132,7 @@ export class SiteService {
     let data = {
       'team' : team_id,
       'parent_folder' : parent_folder_id,
-      'owner' : user.id,
+      // 'owner' : user.id,
       'name' : folder_name
     }
 

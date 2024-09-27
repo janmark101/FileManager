@@ -14,7 +14,8 @@ import { KeycloakService } from 'keycloak-angular';
 })
 export class NavbarComponent implements OnInit{
 
-  user: any;
+  user: boolean = false;
+  userinfo:any;
 
   subscription: Subscription = new Subscription();
   
@@ -22,11 +23,22 @@ export class NavbarComponent implements OnInit{
 
   ngOnInit(): void {
     this.user = this.keycloak.Logged();
-    console.log(this.user)
-    console.log(this.keycloaksService.getKeycloakInstance().resourceAccess?.['angular-app']?.roles || [],'roles ');
-    // this.subscription = this.SiteService.callNgOnInit$.subscribe(() => {
-    //   this.ngOnInit();
-    // });
+    this.get_user();    
+    
+  }
+
+  get_user() {
+    if (this.user == true){
+      this.keycloaksService.loadUserProfile().then(userInfo => {
+        this.userinfo = userInfo
+        
+      }).catch(error => {
+        console.error("Błąd podczas ładowania profilu użytkownika", error);
+      });
+    }
+    else{
+      this.userinfo = undefined;
+    }
 
   }
 
@@ -38,7 +50,4 @@ export class NavbarComponent implements OnInit{
     this.keycloak.Logout();
   }
 
-  // ngOnDestroy(): void {
-  //   this.subscription.unsubscribe();
-  // }
 }

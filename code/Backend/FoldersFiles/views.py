@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import File, Folder
 from .serializers import FileSerializer, FolderSerializer, FolderAddSerializer
 from rest_framework.authentication import TokenAuthentication
-from Auth.models import Team
+from Auth.models import Team, TeamRoles
 from django.shortcuts import get_object_or_404
 from Auth.serializers import TeamSerialzer
 from django.db.models import Q
@@ -65,6 +65,12 @@ class FoldersForTeamView(APIView):
         
         if Folder.objects.filter(team=team,name=request.data.get('name'),parent_folder=request.data.get('parent_folder')).exists() and request.data.get('parent_folder') is not None:
             return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        
+        if request.data.get('parent_folder') is None:
+            user_role_in_team = get_object_or_404(TeamRoles,team=team, user=request.user)
+            print(user_role_in_team.role)
+            if user_role_in_team.is_default:
+                return Response({"error":"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
         
         folder = FolderAddSerializer(data=request.data)
         if folder.is_valid():

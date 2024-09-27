@@ -190,7 +190,7 @@ onAddFolder(form :NgForm){
     this.closePanel();
     this.toast.success('Folder created!')
   },(error) =>{
-    this.toast.error(error.error.Error);
+    this.toast.error(error.error.error);
     
   })
 }

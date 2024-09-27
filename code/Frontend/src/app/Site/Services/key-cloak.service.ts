@@ -20,4 +20,5 @@ export class KeyCloakService {
   Logged(){
     return this.keycloakService.isLoggedIn();
   }
+
 }
