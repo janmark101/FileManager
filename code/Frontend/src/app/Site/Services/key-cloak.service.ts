@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Router } from '@angular/router';
 import { KeycloakService } from 'keycloak-angular';
 
 @Injectable({
@@ -6,7 +7,7 @@ import { KeycloakService } from 'keycloak-angular';
 })
 export class KeyCloakService {
 
-  constructor(private keycloakService : KeycloakService) { }
+  constructor(private keycloakService : KeycloakService,private router:Router) { }
 
 
   Login(){

@@ -66,7 +66,7 @@ export class SubFolderComponent {
       
     },(error:any) =>{
       console.error(error);
-      
+
     })
   }
 
@@ -76,10 +76,19 @@ export class SubFolderComponent {
   }
 
   navigateToSubfolder(folderId: number): void {
-    let url = this.router.url + "/" + folderId
-    this.router.navigateByUrl(url).then(()=>{
-      this.ngOnInit();
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
+      let url = this.router.url + "/" + folderId
+      this.router.navigateByUrl(url).then(()=>{
+        this.ngOnInit();
+      })
+    }),error=>{
+      console.log("nie ma permisji");
+      
+      if (error.status == 401){
+        this.toast.error(error.error.Error)
+      }
     })
+
   }
 
   navigateToUrl(folderId:string){

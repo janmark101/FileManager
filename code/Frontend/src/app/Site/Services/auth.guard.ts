@@ -11,7 +11,9 @@ export class AuthGuard implements CanActivate {
 
   canActivate(): boolean {
     if (!( this.keycloakService.isLoggedIn())) {
-      this.keycloakService.login();
+      this.keycloakService.login({
+        redirectUri: window.location.origin + '/' 
+      });
       return false;
     }
     return true;
