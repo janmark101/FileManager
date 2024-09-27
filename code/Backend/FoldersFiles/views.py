@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import File, Folder
+from .models import File, Folder, FolderRole
 from .serializers import FileSerializer, FolderSerializer, FolderAddSerializer
 from rest_framework.authentication import TokenAuthentication
 from Auth.models import Team, TeamRoles
@@ -50,6 +50,7 @@ class FoldersForTeamView(APIView):
 
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
+        
         team_serializer = TeamSerialzer(team,many=False)
         folders = Folder.objects.filter(
             Q(team=team) & Q(parent_folder__isnull=True)
@@ -68,13 +69,15 @@ class FoldersForTeamView(APIView):
         
         if request.data.get('parent_folder') is None:
             user_role_in_team = get_object_or_404(TeamRoles,team=team, user=request.user)
-            print(user_role_in_team.role)
             if user_role_in_team.is_default:
                 return Response({"error":"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
         
         folder = FolderAddSerializer(data=request.data)
         if folder.is_valid():
-            folder.save()
+            folder = folder.save()
+            FolderRole.objects.create(user=request.user,folder=folder,role='full_access')
+            for user in team.users.all():
+                FolderRole.objects.create(user=user,folder=folder,role='no_access')
             return Response(status=status.HTTP_201_CREATED)
         return Response(folder.errors,status=status.HTTP_400_BAD_REQUEST)
     
@@ -82,8 +85,13 @@ class SubFoldersView(APIView):
     permission_classes=[AllowAny]
     
     def get(self,request,tid,fid):
+        
         team = get_object_or_404(Team,id=tid)
         folder = get_object_or_404(Folder,id=fid)
+        
+        # user_folder_role = get_object_or_404(FolderRole,folder=folder,user=request.user)
+        # if user_folder_role.has_no_access:
+        #     return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
         
         folder_names = []
         folder_ids = []
@@ -108,6 +116,18 @@ class SubFoldersView(APIView):
         folders_serializer = FolderSerializer(folders,many=True)
         return Response({"team" : team_serializer.data,"folders" : folders_serializer.data,"files":files_serializer.data,"folder_names_ids" : [rev_folder_names,rev_folder_ids]}, status=status.HTTP_200_OK)
         
+
+class CheckFolderPermissionView(APIView):
+    
+    def get(self,request,tid,fid):
+        team = get_object_or_404(Team,id=tid)
+        folder = get_object_or_404(Folder,id=fid)
+        
+        user_folder_role = get_object_or_404(FolderRole,folder=folder,user=request.user)
+        if user_folder_role.has_no_access:
+            return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
+        
+        return Response(status=status.HTTP_200_OK)
         
 
 class FileObjectView(APIView):

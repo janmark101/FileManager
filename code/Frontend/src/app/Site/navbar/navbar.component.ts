@@ -5,6 +5,7 @@ import { Subscription } from 'rxjs';
 import { SiteService } from '../Services/site.service';
 import { KeyCloakService } from '../Services/key-cloak.service';
 import { KeycloakService } from 'keycloak-angular';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -19,7 +20,7 @@ export class NavbarComponent implements OnInit{
 
   subscription: Subscription = new Subscription();
   
-  constructor (private keycloak:KeyCloakService,private SiteService:SiteService,private keycloaksService:KeycloakService) {}
+  constructor (private keycloak:KeyCloakService,private SiteService:SiteService,private keycloaksService:KeycloakService,private router:Router) {}
 
   ngOnInit(): void {
     this.user = this.keycloak.Logged();

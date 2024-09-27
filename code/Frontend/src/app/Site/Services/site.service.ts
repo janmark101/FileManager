@@ -22,9 +22,9 @@ export class SiteService {
   }
 
   getFolders(id:number){
-    let headers = this.Auth.setHeaders()
 
-    return this.http.get<Folder[]>(`${this.baseURL}teams/${id}/`, {headers})
+
+    return this.http.get<Folder[]>(`${this.baseURL}teams/${id}/`)
     .pipe(catchError(error =>{
       console.log("Error fetching folders: ",error);
       return throwError(error)
@@ -32,9 +32,8 @@ export class SiteService {
   }
 
   getSubFoldersFiles(tid:number,fid:number){
-    let headers = this.Auth.setHeaders()
 
-    return this.http.get<Response>(`${this.baseURL}teams/${tid}/${fid}`, {headers})
+    return this.http.get<Response>(`${this.baseURL}teams/${tid}/${fid}`)
     .pipe(catchError(error =>{
       console.log("Error fetching folders: ",error);
       return throwError(error)
@@ -42,13 +41,13 @@ export class SiteService {
   }
 
   renameFile(newFileName:string,fileId:number){
-    let headers = this.Auth.setHeaders()
+  
 
     let data = {
       'name' : newFileName
     }
 
-    return this.http.patch(`${this.baseURL}file/${fileId}/`,data,{headers})
+    return this.http.patch(`${this.baseURL}file/${fileId}/`,data,)
     .pipe(catchError(error =>{
       console.log("Error patching file name: ",error);
       return throwError(error)
@@ -156,4 +155,12 @@ export class SiteService {
 
   }
 
+
+  checkFolderPermission(tid:number,fid:number){
+    return this.http.get(`${this.baseURL}folder/${tid}/${fid}/permission`)
+    .pipe(catchError(error =>{
+      console.log("Error: ",error);
+      return throwError(error)
+    }))
+  }
 }

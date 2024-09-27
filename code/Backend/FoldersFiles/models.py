@@ -65,3 +65,21 @@ class FolderRole(models.Model):
         
     def __str__(self):
         return f"{self.folder}, {self.user}, {self.role} "
+    
+    @property
+    def has_default(self):
+        return self.role=='default'
+    
+    @property
+    def has_full_access(self):
+        return self.role=='full_access'
+    
+    @property
+    def has_part_access(self):
+        return self.role=='part_access'
+    
+    @property
+    def has_no_access(self):
+        return self.role=='no_access'
+    
+    

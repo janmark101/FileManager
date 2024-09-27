@@ -74,9 +74,18 @@ export class TeamComponent implements OnInit{
   }
 
   navigateToSubfolder(folderId: number): void {
-    this.currentPath.push(folderId.toString());
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
+      this.currentPath.push(folderId.toString());
 
-    this.router.navigate([`/teams`, ...this.currentPath]);
+      this.router.navigate([`/teams`, ...this.currentPath]);
+    }),error=>{
+      console.log("nie ma permisji");
+      
+      if (error.status == 401){
+        this.toast.error(error.error.Error)
+      }
+    })
+  
   }
 
 
