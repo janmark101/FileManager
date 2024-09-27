@@ -31,7 +31,6 @@ export class TeamService {
     let data = {
       "name" : team_name,
       "users" : [],
-      "team_owner" : user.id
     }
 
     return this.http.post(`${this.baseURL}`,data,{})
@@ -56,6 +55,24 @@ export class TeamService {
     return this.http.delete(`${this.baseURL}${team_id}/`, {})
     .pipe(catchError(error =>{
       console.log("Error deleting team:", error);
+      return throwError(error);
+    }))
+  }
+
+  joinTeam(code:number){
+
+    return this.http.get(`${this.baseURL}join/${code}`)
+    .pipe(catchError(error =>{
+      console.log("Error joining team:", error);
+      return throwError(error);
+    }))
+  }
+
+
+  generateAddingLink(teamID : number){
+    return this.http.get(`${this.baseURL}${teamID}/addinglink`)
+    .pipe(catchError(error =>{
+      console.log("Error generating link: ", error);
       return throwError(error);
     }))
   }

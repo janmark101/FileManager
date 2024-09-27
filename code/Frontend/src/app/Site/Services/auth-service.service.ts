@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError } from 'rxjs';
 import { User } from '../Models/Models';
+import { KeyCloakService } from './key-cloak.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,7 @@ import { User } from '../Models/Models';
 export class AuthServiceService {
 
 
-  constructor(private http: HttpClient) { 
+  constructor(private http: HttpClient,private keycloak: KeyCloakService) { 
 }
 
 
@@ -30,8 +31,10 @@ export class AuthServiceService {
   }
 
   getUser() {
-    const userString = localStorage.getItem('User');
-    return userString ? JSON.parse(userString) : null;
+    // const userString = localStorage.getItem('User');
+    // return userString ? JSON.parse(userString) : null;
+    // this.keycloak.get_user();
+
   }
 
 

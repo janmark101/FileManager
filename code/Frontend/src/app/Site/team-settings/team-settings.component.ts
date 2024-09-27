@@ -28,6 +28,8 @@ export class TeamSettingsComponent implements OnInit{
   }
 
   team_id : number = -1
+  addingLinkWindow : boolean = false;
+  addingLink : string = ''
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params=>{
@@ -61,6 +63,21 @@ export class TeamSettingsComponent implements OnInit{
         })) 
       }
     });
+  }
+
+  generateLink(){
+    this.teamService.generateAddingLink(this.team_id).pipe(take(1)).subscribe((data:any) => {
+      this.addingLink = `http://localhost:4200/join/${data.link}`
+      this.addingLinkWindow = true;
+    }, (error => {
+      console.error(error);
+      this.addingLink = '';
+      this.addingLinkWindow = false;
+    }))
+  }
+
+  closePanel(){
+    this.addingLinkWindow = false;
   }
 }
 

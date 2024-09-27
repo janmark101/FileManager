@@ -10,51 +10,12 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.shortcuts import get_object_or_404
 from .serializers import UserSerializer, TeamSerialzer, RegisterUserSerializer
 from django.contrib.auth.models import User
-from .models import Team
+from .models import Team, TeamRoles
 from django.db.models import Q
 from itertools import chain
-# from Backend.settings import KEYCLOAK_CLIENT_ID,KEYCLOAK_CLIENT_SECRET,KEYCLOAK_REALM,KEYCLOAK_SERVER_URL
-
-class Login(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        
-        if username is None or password is None: 
-            return Response({'error' : 'You must insert username and password!'},status=status.HTTP_400_BAD_REQUEST)
-
-        user = authenticate(username=username, password=password)
-        
-        if user is not None:
-            serializer = UserSerializer(user,many=False).data
-            token, created = Token.objects.get_or_create(user=user)
-            serializer['token'] = token.key
-            return Response({'user':serializer}, status=status.HTTP_200_OK)
-        return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
-    
-    
-class Logout(APIView):
-    permission_classes=[IsAuthenticated]
-    authentication_classes=[TokenAuthentication]
-    
-    def post(self,request):
-        token = get_object_or_404(Token,user=request.user)
-        token.delete()
-        return Response({'message':'Logged out succesfully!'},status=status.HTTP_200_OK)
-    
-    
-class Register(APIView):
-    permission_classes=[AllowAny]
-    
-    def post(self,request):
-        user = RegisterUserSerializer(data=request.data)
-        if user.is_valid():
-            user.save()
-            return Response(user.data)
-        return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
-
+from django.utils.crypto import get_random_string
+from datetime import timedelta
+from django.utils import timezone
 
 class TeamView(APIView):
     
@@ -66,15 +27,20 @@ class TeamView(APIView):
         return Response(serializer.data,status=status.HTTP_200_OK)
     
     def post(self,request):
+        request.data['team_owner'] = request.user.id
         team = TeamSerialzer(data=request.data)
         if team.is_valid():
-            team.save()
+            team = team.save()
+            TeamRoles.objects.create(
+                team=team,
+                user=request.user,
+                role='admin'
+            )
             return Response({'response' : 'Team created!'}, status=status.HTTP_201_CREATED)
         return Response(team.errors,status = status.HTTP_400_BAD_REQUEST)
     
     
 class TeamObjectView(APIView):
-    permission_classes=[AllowAny]
     
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
@@ -86,4 +52,33 @@ class TeamObjectView(APIView):
         team.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     
+    
+class JoinTeamView(APIView):
+    
+    def get(self,request,code):
+        team = get_object_or_404(Team,adding_link_code=code)
+        
+        if team.code_is_valid():
+            if request.user in team.users.all():
+                return Response({"Error":f"Already in {team.name}!"},status=status.HTTP_409_CONFLICT)
+            team.users.add(request.user)
+            TeamRoles.objects.create(user=request.user,team=team,role='default')
+            return Response({"response" : f"Joined {team.name}"},status=status.HTTP_200_OK)
+        
+        return Response({"Error" : "The code has expired"},status=status.HTTP_400_BAD_REQUEST)
+    
+    
+class AddingLinkView(APIView):
+    
+    def get(self,request,id):
+        team = get_object_or_404(Team,id=id)
+        
+        adding_link_code = get_random_string(16)
+        while Team.objects.filter(adding_link_code=adding_link_code).exists():
+            adding_link_code = get_random_string(16)
+            
+        team.adding_link_code = adding_link_code
+        team.adding_link_code_expiration_time = timezone.now() + timedelta(minutes=10)
+        team.save()
+        return Response({'link' : adding_link_code},status=status.HTTP_200_OK) 
     

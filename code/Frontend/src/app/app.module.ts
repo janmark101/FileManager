@@ -23,6 +23,7 @@ import { ToastrModule } from 'ngx-toastr';
 import { initializeKeycloak } from 'src/keycloak-init'; 
 import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { JoinTeamComponent } from './Site/join-team/join-team.component';
 
 
 
@@ -36,6 +37,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
     TeamSettingsComponent,
     LoginComponent,
     RegisterComponent,
+    JoinTeamComponent,
 
   ],
   imports: [
