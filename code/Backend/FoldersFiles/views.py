@@ -14,6 +14,8 @@ from django.db.models import Q
 from django.http import FileResponse, Http404
 import os
 from django.conf import settings
+import requests
+
 
 def download_file(request, file_path):
     # file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
@@ -43,10 +45,42 @@ class UploadFileView(APIView):
         )
         serializer = FileSerializer(file_instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+ 
+ 
+def get_access_token() -> str:
+   url = 'http://localhost:8080/realms/Realm-dev/protocol/openid-connect/token'     
+   
+   data = {
+       "client_id" : 'django-app',
+       "client_secret" : 'V60bjjUkroQUklc7TO9yCN3wZ5xr4cUp',
+       "grant_type" : "client_credentials"
+   }
+   
+   headers = {
+       "Content-Type" : "application/x-www-form-urlencoded"
+   }
+   
+   response = requests.post(url,data=data,headers=headers)
+   return response.json()['access_token']
     
     
+def add_permission_to_folder(token:str, folder_id:str, user_id:int, role:str):
+    url = f'http://localhost:8080/realms/Realm-dev/authz/protection/uma/permissions'
+    
+    data = {
+        "resource_id" : folder_id,
+        "scopes" : [role],
+        "user_id" : user_id
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, json=data, headers=headers)
+
 class FoldersForTeamView(APIView):
-    permission_classes=[AllowAny]
 
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
@@ -60,26 +94,58 @@ class FoldersForTeamView(APIView):
     
     def post(self,request,id):
         team = get_object_or_404(Team,id=id)
+        token = get_access_token()
+        url = 'http://localhost:8080/realms/Realm-dev/authz/protection/resource_set'
+        print(request.user)
+        data = {
+            "name" : f"{team.id}/{request.data.get('name')}",
+            "type" : "Folder",
+            "attributes": {
+            "folder_id": "unique-folder-id",
+            "created_by" : request.user.id
+            },
+            "uris": [f"{team.id}/{request.data.get('name')}"],
+            "scopes": ["no_access", "default", "part_access", "full_access"]
+        }
         
-        if Folder.objects.filter(team=team,name=request.data.get('name')).exists() and request.data.get('parent_folder') is None:
-            return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
         
-        if Folder.objects.filter(team=team,name=request.data.get('name'),parent_folder=request.data.get('parent_folder')).exists() and request.data.get('parent_folder') is not None:
-            return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        response = requests.post(url=url, json=data,headers=headers)
         
-        if request.data.get('parent_folder') is None:
-            user_role_in_team = get_object_or_404(TeamRoles,team=team, user=request.user)
-            if user_role_in_team.is_default:
-                return Response({"error":"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
-        
-        folder = FolderAddSerializer(data=request.data)
-        if folder.is_valid():
-            folder = folder.save()
-            FolderRole.objects.create(user=request.user,folder=folder,role='full_access')
+        if response.status_code == 409:
+            return Response(status=status.HTTP_409_CONFLICT)
+        if response.status_code == 200:
+            folder_id = response.json()['_id']
             for user in team.users.all():
-                FolderRole.objects.create(user=user,folder=folder,role='no_access')
+                pass
+            print(response.json())
             return Response(status=status.HTTP_201_CREATED)
-        return Response(folder.errors,status=status.HTTP_400_BAD_REQUEST)
+        print(response.json())
+        return Response(status=status.HTTP_201_CREATED)
+        # team = get_object_or_404(Team,id=id)
+        
+        # if Folder.objects.filter(team=team,name=request.data.get('name')).exists() and request.data.get('parent_folder') is None:
+        #     return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        
+        # if Folder.objects.filter(team=team,name=request.data.get('name'),parent_folder=request.data.get('parent_folder')).exists() and request.data.get('parent_folder') is not None:
+        #     return Response({"Error" : "Folder with this name already exists!"},status=status.HTTP_400_BAD_REQUEST)
+        
+        # if request.data.get('parent_folder') is None:
+        #     user_role_in_team = get_object_or_404(TeamRoles,team=team, user=request.user)
+        #     if user_role_in_team.is_default:
+        #         return Response({"error":"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)
+        
+        # folder = FolderAddSerializer(data=request.data)
+        # if folder.is_valid():
+        #     folder = folder.save()
+        #     FolderRole.objects.create(user=request.user,folder=folder,role='full_access')
+        #     for user in team.users.all():
+        #         FolderRole.objects.create(user=user,folder=folder,role='no_access')
+        #     return Response(status=status.HTTP_201_CREATED)
+        # return Response(folder.errors,status=status.HTTP_400_BAD_REQUEST)
     
 class SubFoldersView(APIView):
     permission_classes=[AllowAny]

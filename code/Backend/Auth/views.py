@@ -18,7 +18,6 @@ from datetime import timedelta
 from django.utils import timezone
 
 class TeamView(APIView):
-    
     def get(self,request):
         teams_owner = Team.objects.filter(team_owner=request.user.id)
         teams_part = Team.objects.filter(users__id=request.user.id)

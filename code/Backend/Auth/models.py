@@ -7,7 +7,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE,null=True)
 
     def __str__(self):
-        return self.user.username
+        return str(self.user)
 
 class Team(models.Model):
     name = models.CharField(max_length=255, null=False,blank=False)
