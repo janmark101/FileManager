@@ -11,18 +11,19 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 
-keycloak_openid = KeycloakOpenID(server_url="http://localhost:8080",
-                                 client_id="django-app",
-                                 realm_name="Realm-dev"
+
+keycloak_openid = KeycloakOpenID(server_url=settings.KEYCLOAK_OPENID['URL'],
+                                 client_id=settings.KEYCLOAK_OPENID['CLIENT_ID'],
+                                 realm_name=settings.KEYCLOAK_OPENID['REALM_NAME']
                                  )
 
 
-keycloak_admin = KeycloakAdmin(server_url="http://localhost:8080",
-                                username='admin',
-                                password='admin',
-                                realm_name="Realm-dev",
-                                client_id='django-app',
-                                client_secret_key='V60bjjUkroQUklc7TO9yCN3wZ5xr4cUp',
+keycloak_admin = KeycloakAdmin(server_url=settings.KEYCLOAK_ADMIN['URL'],
+                                username=settings.KEYCLOAK_ADMIN['USERNAME'],
+                                password=settings.KEYCLOAK_ADMIN['PASSWORD'],
+                                realm_name=settings.KEYCLOAK_ADMIN['REALM_NAME'],
+                                client_id=settings.KEYCLOAK_ADMIN['CLIENT_ID'],
+                                client_secret_key=settings.KEYCLOAK_ADMIN['CLIENT_SECRET_KEY'],
                                 verify=False)
 
 
@@ -46,20 +47,20 @@ class KeycloakAuthentication(JWTAuthentication):
             print(token)
             # print(keycloak_admin.get_client_authz_resources(client_id='94558e4b-6a12-4bde-88f7-a9d36dcd14a9'))
             # print(keycloak_admin.get_client_authz_permissions(client_id='94558e4b-6a12-4bde-88f7-a9d36dcd14a9'))
-            keycloak_admin.create_client_authz_resource_based_permission(client_id='94558e4b-6a12-4bde-88f7-a9d36dcd14a9',
-                payload={
-        "type": "resource",
-        "logic": "POSITIVE",
-        "decisionStrategy": "UNANIMOUS",
-        "name": "Oby zadzialalo prosze",
-        "resources": [
-            '089b7b64-96d6-4ff5-b47f-e0fa22b1f1be'
-        ],
-        "policies": [
+        #     keycloak_admin.create_client_authz_resource_based_permission(client_id='94558e4b-6a12-4bde-88f7-a9d36dcd14a9',
+        #         payload={
+        # "type": "resource",
+        # "logic": "POSITIVE",
+        # "decisionStrategy": "UNANIMOUS",
+        # "name": "Oby zadzialalo prosze",
+        # "resources": [
+        #     '089b7b64-96d6-4ff5-b47f-e0fa22b1f1be'
+        # ],
+        # "policies": [
             
-        ]
-                }
-            )
+        # ]
+        #         }
+        #     )
             user = self.get_or_create_user(user_info)
 
             return (user,token)

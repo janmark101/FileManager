@@ -119,9 +119,21 @@ SIMPLE_JWT = {
     'TOKEN_LIFETIME': timedelta(minutes=5),
 }
 
-KEYCLOAK_URL = 'http://localhost:8080'
-KEYCLOAK_REALM = "dive-dev"
-KEYCLOAK_CLIENT_ID = "angular-app"
+
+KEYCLOAK_OPENID = {
+    "URL" : 'http://localhost:8080',
+    "CLIENT_ID" : os.environ.get("CLIENT_ID"),
+    "REALM_NAME" : os.environ.get("REALM")
+}
+
+KEYCLOAK_ADMIN = {
+    "URL" : 'http://localhost:8080',
+    "CLIENT_ID" : os.environ.get("CLIENT_ID"),
+    "REALM_NAME" : os.environ.get('REALM'),
+    "USERNAME" : os.environ.get("KK_USER"),
+    "PASSWORD" : os.environ.get("KK_PASSWORD"),
+    "CLIENT_SECRET_KEY" : os.environ.get("CLIENT_SECRET_KEY")
+}
 
 
 
