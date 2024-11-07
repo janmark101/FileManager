@@ -24,7 +24,7 @@ services:
       - my-network
 
   keycloak:
-    image: quay.io/keycloak/keycloak:21.0.1
+    image: quay.io/keycloak/keycloak:23.0.1
     environment:
       DB_VENDOR: postgres
       DB_ADDR: keycloak-db

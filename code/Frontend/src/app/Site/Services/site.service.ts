@@ -124,14 +124,14 @@ export class SiteService {
 
 
   
-  addFolder(folder_name:string, parent_folder_id : number | null, team_id :number){
+  addFolder(folder_name:string, parent_folder_id : number | null, team_id :number,scope:string){
     let headers = this.Auth.setHeaders()
     let user = this.Auth.getUser()
     
     let data = {
       'team' : team_id,
       'parent_folder' : parent_folder_id,
-      // 'owner' : user.id,
+      'scope' : scope,
       'name' : folder_name
     }
 
@@ -156,8 +156,11 @@ export class SiteService {
   }
 
 
-  checkFolderPermission(tid:number,fid:number){
-    return this.http.get(`${this.baseURL}folder/${tid}/${fid}/permission`)
+  checkFolderPermission(tid:number,fid:number,scopes:unknown){
+    let data = {
+      "scopes" : scopes
+    }
+    return this.http.post(`${this.baseURL}folder/${tid}/${fid}/permission`,data)
     .pipe(catchError(error =>{
       console.log("Error: ",error);
       return throwError(error)

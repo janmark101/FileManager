@@ -16,11 +16,11 @@ export class folderGuard implements CanActivate {
     let url = this.router.url.split('/');
     console.log(url);
     
-    this.siteService.checkFolderPermission(Number(url[2]),Number(url.at(-1))).pipe(take(1)).subscribe(data=>{
-      return true
-    },(error =>{
-      return true
-    }))
+    // this.siteService.checkFolderPermission(Number(url[2]),Number(url.at(-1))).pipe(take(1)).subscribe(data=>{
+    //   return true
+    // },(error =>{
+    //   return true
+    // }))
     return true;
   }
 }

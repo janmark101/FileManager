@@ -73,8 +73,10 @@ export class TeamComponent implements OnInit{
     })
   }
 
-  navigateToSubfolder(folderId: number): void {
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
+  navigateToSubfolder(folderId: number): void {    
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['default','part_access','full_access']).pipe(take(1)).subscribe((data=>{ 
+      console.log(data);
+           
       this.currentPath.push(folderId.toString());
 
       this.router.navigate([`/teams`, ...this.currentPath]);
@@ -194,12 +196,13 @@ addFolder(){
 
 onAddFolder(form :NgForm){
   
-  this.SiteService.addFolder(form.value['folder-name'],null,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
+  this.SiteService.addFolder(form.value['folder-name'],null,this.team_id,'default').pipe(take(1)).subscribe((data:unknown) =>{
     this.ngOnInit();
     this.closePanel();
     this.toast.success('Folder created!')
   },(error) =>{
     this.toast.error(error.error.error);
+    console.log(error);
     
   })
 }

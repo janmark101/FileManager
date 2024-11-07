@@ -76,18 +76,23 @@ export class SubFolderComponent {
   }
 
   navigateToSubfolder(folderId: number): void {
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
-      let url = this.router.url + "/" + folderId
+    // this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
+    //   let url = this.router.url + "/" + folderId
+    //   this.router.navigateByUrl(url).then(()=>{
+    //     this.ngOnInit();
+    //   })
+    // }),error=>{
+    //   console.log("nie ma permisji");
+      
+    //   if (error.status == 401){
+    //     this.toast.error(error.error.Error)
+    //   }
+    // })
+
+    let url = this.router.url + "/" + folderId
       this.router.navigateByUrl(url).then(()=>{
         this.ngOnInit();
       })
-    }),error=>{
-      console.log("nie ma permisji");
-      
-      if (error.status == 401){
-        this.toast.error(error.error.Error)
-      }
-    })
 
   }
 
@@ -302,7 +307,7 @@ export class SubFolderComponent {
     let parent_folder = Number(this.currentPath.at(-1))
     
     
-    this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id).pipe(take(1)).subscribe((data:unknown) =>{
+    this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id,'default').pipe(take(1)).subscribe((data:unknown) =>{
       this.ngOnInit();
       this.closePanel();
       this.toast.success('Folder created!')
