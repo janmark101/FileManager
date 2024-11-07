@@ -55,13 +55,14 @@ export class SubFolderComponent {
   }
 
   fetchSubFoldersFiles(){    
-    this.SiteService.getSubFoldersFiles(Number(this.currentPath[2]),Number(this.currentPath.at(-1))).pipe(take(1)).subscribe((data:Response) =>{
+    
+    this.SiteService.getSubFoldersFiles(Number(this.currentPath[2]),this.currentPath.at(-1)).pipe(take(1)).subscribe((data:Response) =>{
       
       this.Folders = data.folders;
       this.accTeam = data.team;
       this.Files = data.files;
-      this.path = data.folder_names_ids[0];
-      this.path_ids = data.folder_names_ids[1]
+      this.path = data.resource_names;
+      this.path_ids = data.resource_ids
       this.makePath();
       
     },(error:any) =>{
@@ -304,7 +305,7 @@ export class SubFolderComponent {
   }
   
   onAddFolder(form :NgForm){
-    let parent_folder = Number(this.currentPath.at(-1))
+    let parent_folder = this.currentPath.at(-1)
     
     
     this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id,'default').pipe(take(1)).subscribe((data:unknown) =>{
@@ -325,7 +326,7 @@ export class SubFolderComponent {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
       let file = input.files[0]; 
-      let folder_id = Number(this.currentPath.at(-1))
+      let folder_id = this.currentPath.at(-1)
       const formData = new FormData();
       formData.append('file',file)
         this.SiteService.addFile(formData,folder_id).pipe(take(1)).subscribe((data:unknown)=>{

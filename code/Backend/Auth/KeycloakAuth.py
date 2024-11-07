@@ -1,12 +1,8 @@
 from rest_framework_simplejwt.tokens import UntypedToken
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from django.utils.deprecation import MiddlewareMixin
+from rest_framework_simplejwt.exceptions import  TokenError
 from keycloak import KeycloakOpenID, KeycloakAdmin
-from django.conf import settings
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .models import UserProfile
-import jwt
-from jwt import InvalidTokenError
 from Backend.settings import KEYCLOAK_ADMIN, KEYCLOAK_OPENID
 from django.contrib.auth.models import User
 

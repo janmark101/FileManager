@@ -31,9 +31,9 @@ export class SiteService {
     }))
   }
 
-  getSubFoldersFiles(tid:number,fid:number){
+  getSubFoldersFiles(tid:number,fid:unknown){
 
-    return this.http.get<Response>(`${this.baseURL}teams/${tid}/${fid}`)
+    return this.http.get<Response>(`${this.baseURL}teams/${tid}/${fid}/`)
     .pipe(catchError(error =>{
       console.log("Error fetching folders: ",error);
       return throwError(error)
@@ -124,9 +124,7 @@ export class SiteService {
 
 
   
-  addFolder(folder_name:string, parent_folder_id : number | null, team_id :number,scope:string){
-    let headers = this.Auth.setHeaders()
-    let user = this.Auth.getUser()
+  addFolder(folder_name:string, parent_folder_id : string | unknown, team_id :number,scope:string){
     
     let data = {
       'team' : team_id,
@@ -135,7 +133,7 @@ export class SiteService {
       'name' : folder_name
     }
 
-    return this.http.post(`${this.baseURL}teams/${team_id}/`,data, {headers})
+    return this.http.post(`${this.baseURL}teams/${team_id}/`,data)
     .pipe(catchError(error =>{
       console.log("Error fetching folders: ",error);
       return throwError(error)
@@ -144,7 +142,7 @@ export class SiteService {
   }
 
 
-  addFile(file:FormData, folder_id : number){
+  addFile(file:FormData, folder_id : string | unknown){
     let headers = this.Auth.setHeaders()
   
     return this.http.post(`${this.baseURL}folder/${folder_id}/addfile/`,file, {headers})

@@ -1,7 +1,6 @@
 # serializers.py
 from rest_framework import serializers
-from .models import File,Folder
-from Auth.serializers import UserSerializer
+from .models import File
 
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,20 +9,4 @@ class FileSerializer(serializers.ModelSerializer):
         read_only_fields = ['owner']
 
 
-class FolderSerializer(serializers.ModelSerializer):
-    parent_folder = serializers.SerializerMethodField()
-    owner = UserSerializer(many=False,read_only=True)
 
-    class Meta:
-        model = Folder
-        fields = ['id', 'team', 'parent_folder','owner', 'name', 'created_at','updated_at']
-
-    def get_parent_folder(self, obj):
-        if obj.parent_folder:
-            return FolderSerializer(obj.parent_folder).data
-        return None
-
-class FolderAddSerializer(serializers.ModelSerializer):
-    class Meta:
-        model= Folder
-        fields = '__all__'

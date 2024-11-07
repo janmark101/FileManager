@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 import os
 from django.utils.text import slugify
 from Auth.models import Team
@@ -20,13 +19,13 @@ class Folder(models.Model):
     
 
 def upload_to(instance, filename):
-    folder_name = slugify(instance.folder.name)
+    folder_name = slugify(instance.folder)
     return os.path.join(folder_name, filename)
 
 
 class File(models.Model):
     file = models.FileField(upload_to=upload_to)
-    folder = models.ForeignKey(Folder, related_name='files', null=False, blank=False, on_delete=models.CASCADE)
+    folder = models.CharField(max_length=50,null=False,blank=False)
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -48,38 +47,3 @@ class File(models.Model):
     class Meta:
         ordering=['id']
         
-class FolderRole(models.Model):
-    ROLE_CHOICES = [
-        ('default','default'),
-        ('full_access','Full Access'),
-        ('part_access', 'Part Access'),
-        ('no_access', 'No Access')
-    ]
-    
-    folder = models.ForeignKey(Folder,on_delete=models.CASCADE)
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    role = models.CharField(max_length=25,choices=ROLE_CHOICES,default=ROLE_CHOICES[3])
-    
-    class Meta:
-        unique_together = ('folder','user')
-        
-    def __str__(self):
-        return f"{self.folder}, {self.user}, {self.role} "
-    
-    @property
-    def has_default(self):
-        return self.role=='default'
-    
-    @property
-    def has_full_access(self):
-        return self.role=='full_access'
-    
-    @property
-    def has_part_access(self):
-        return self.role=='part_access'
-    
-    @property
-    def has_no_access(self):
-        return self.role=='no_access'
-    
-    
