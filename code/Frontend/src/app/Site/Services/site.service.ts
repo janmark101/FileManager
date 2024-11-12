@@ -111,7 +111,7 @@ export class SiteService {
     let headers = this.Auth.setHeaders() 
 
     let data = {
-      'parent_folder' : parentFolderId
+      'parent_resource' : parentFolderId
     }
 
     return this.http.patch(`${this.baseURL}folder/${folderId}/`,data,{headers})
@@ -128,16 +128,12 @@ export class SiteService {
     
     let data = {
       'team' : team_id,
-      'parent_folder' : parent_folder_id,
+      'parent_resource' : parent_folder_id,
       'scope' : scope,
       'name' : folder_name
     }
 
     return this.http.post(`${this.baseURL}teams/${team_id}/`,data)
-    .pipe(catchError(error =>{
-      console.log("Error fetching folders: ",error);
-      return throwError(error)
-    }))
 
   }
 

@@ -12,7 +12,7 @@ from django.http import FileResponse, Http404
 import os
 from Backend.settings import KEYCLOAK_ADMIN
 from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
-from keycloak.exceptions import KeycloakPostError
+from keycloak.exceptions import KeycloakPostError, KeycloakPutError
 from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, get_sub_resources, get_resource_by_team, \
     get_resource_parent_resources
 import uuid
@@ -69,7 +69,8 @@ class ResourceForTeamView(APIView):
         resources_filtered = list(filter(lambda resource : get_resource_by_team(resource=resource,
                                                                        team_id=team.id),resources))
         
-        fixed_resources = [{"name" : res['name'], "id" : res['_id']} for res in resources_filtered]
+        
+        fixed_resources = [{"name" : res['name'].split('/')[1], "id" : res['_id']} for res in resources_filtered]
         
         team_serializer = TeamSerialzer(team,many=False)
 
@@ -78,18 +79,26 @@ class ResourceForTeamView(APIView):
     def post(self,request,id):
         team = get_object_or_404(Team, id=id)
         resource_name = request.data.get('name')
-                
+        
+        parent_resource_id  = request.data.get('parent_resource')
+        
         payload = {
             "name": f"{team.id}/{resource_name}",
             "type": "Folder",
             "attributes": {
                 "created_by": request.user.id,
                 "team": team.id,
-                "parent_resource": request.data.get('parent_folder')
+                "parent_resource": request.data.get('parent_resource')
             },
-            "uris": [f"{team.id}/{resource_name}"],
+            "uris": [],
             "scopes": ["no_access", "default", "part_access", "full_access"]
         }
+        
+        if parent_resource_id != 'None':
+            parent_resource = keycloak_admin.get_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                                       resource_id=parent_resource_id)
+            
+            payload['name'] = f"{parent_resource['name']}/{resource_name}"
         
         try:
             resource_data = keycloak_admin.create_client_authz_resource(
@@ -99,7 +108,7 @@ class ResourceForTeamView(APIView):
             
             scope = get_scope_id(scope=request.data.get('scope'))
             try : 
-                keycloak_admin.create_client_authz_scope_permission(
+                res = keycloak_admin.create_client_authz_scope_permission(
                         client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                         payload={
                             "type": "resource",
@@ -118,7 +127,7 @@ class ResourceForTeamView(APIView):
                             ]
                         }
                     )
-                
+
                 for user in team.users.all():
                     keycloak_admin.create_client_authz_scope_permission(
                         client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
@@ -149,8 +158,9 @@ class ResourceForTeamView(APIView):
             return Response(status=status.HTTP_201_CREATED)
         
         except KeycloakPostError as e:
+            print(str(e))
             if e.response_code == 409:
-                return Response({"error": "Folder with this name already exists!"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"error": "Folder with this name already exists!"}, status=status.HTTP_409_CONFLICT)
         
         return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -172,7 +182,7 @@ class SubResourcesView(APIView):
                                                             parent_folder_id=fid), resources)) 
                 
         
-        fixed_resources = [{"name" : resource['name'].split('/')[1], "id" : resource['_id']} for resource in resources_filtered]
+        fixed_resources = [{"name" : resource['name'].rsplit('/',1)[1], "id" : resource['_id']} for resource in resources_filtered]
         
         files = File.objects.filter(folder=fid)
         file_serializer = FileSerializer(files,many=True)
@@ -219,9 +229,6 @@ class FileObjectView(APIView):
     def patch(self,request,id):
         file = get_object_or_404(File,id=id)
         
-        print(request.data)
-        if request.data.get('folder'):
-            get_object_or_404(Folder,id=request.data.get('folder'))
             
         serializer = FileSerializer(file,data=request.data,partial=True)
         
@@ -238,16 +245,43 @@ class FolderObjectView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self,request,id):
-        # folder = get_object_or_404(Folder,id=id)
-
-        # if request.data.get('parent_folder'):
-        #     temp = get_object_or_404(Folder,id=request.data.get('parent_folder'))
-        #     folder.parent_folder = temp
-        #     folder.save()
-        #     return Response(status=status.HTTP_200_OK)
         
-        # serializer = FolderSerializer(folder,data=request.data,partial=True)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        resource = keycloak_admin.get_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                            resource_id=id)
+        
+        payload = {
+            "name": "",
+            "type": "Folder",
+            "attributes": {
+                "created_by": request.user.id,
+                "team": 13,
+                "parent_resource": resource['attributes']['parent_resource']
+            },
+            "uris": [],
+            "scopes": ["no_access", "default", "part_access", "full_access"]
+        }
+        
+        
+        parent_resource_id = request.data.get('parent_resource')
+
+        if parent_resource_id:
+            parent_resource = keycloak_admin.get_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                                       resource_id=parent_resource_id)
+            payload['attributes']['parent_resource'] = parent_resource_id
+            payload['name'] = f"{parent_resource['name']}/{resource['name'].rsplit('/',1)[1]}"
+            
+        else:
+            payload['name'] = f"{resource['name'].rsplit('/',1)[0]}/{request.data.get('name')}"
+        
+        try:
+            keycloak_admin.update_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                                resource_id=id,
+                                                                payload=payload)
+            
+            return Response(status=status.HTTP_200_OK)
+            
+        except KeycloakPutError as e:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+
+        

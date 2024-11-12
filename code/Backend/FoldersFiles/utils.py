@@ -49,6 +49,10 @@ def get_resource_parent_resources(resources : List[Dict[str,str]],
                                    resource_id : str) -> List[str]:
     
     resource = list(filter(lambda res : res['_id'] == resource_id ,resources))
+    
+    if not resource:
+        return [], []
+    
     resource_parent_resource = resource[0]['attributes']['parent_resource'][0]
     
     
@@ -58,7 +62,7 @@ def get_resource_parent_resources(resources : List[Dict[str,str]],
     while resource_parent_resource != 'None':
         parent_resource = list(filter(lambda res : res['_id'] == resource_parent_resource,resources))
         resource_parent_resource = parent_resource[0]['attributes']['parent_resource'][0]
-        resource_name = parent_resource[0]['name'].split('/')
+        resource_name = parent_resource[0]['name'].rsplit('/',1)
         resource_names.append(resource_name[1])
         resource_ids.append(parent_resource[0]['_id'])
         

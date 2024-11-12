@@ -154,7 +154,7 @@ export class TeamComponent implements OnInit{
         this.selected_file_folder.name = form.value['edit-name']
         this.closePanel();
       },(error) =>{
-        console.error(error);
+        this.toast.error('Something went wrong!');
         
       })
   }
@@ -200,7 +200,7 @@ onAddFolder(form :NgForm){
     this.toast.success('Folder created!')
   },(error) =>{
     this.toast.error(error.error.error);
-    console.log(error);
+    
     
   })
 }

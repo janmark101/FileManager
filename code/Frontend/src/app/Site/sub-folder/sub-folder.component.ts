@@ -170,6 +170,8 @@ export class SubFolderComponent {
     selected_file_ext : string = '';
 
     RenameFile(file:File_){
+      console.log(file);
+      
       this.selected_file_folder = file
       this.isRenameOpen = true
     }
@@ -190,7 +192,7 @@ export class SubFolderComponent {
     }
 
 
-    RenameFolder(folder:Folder){
+    RenameFolder(folder:Folder){      
       this.selected_file_folder = folder
       this.isRenameOpen = true
     }
@@ -216,18 +218,8 @@ export class SubFolderComponent {
 
     onRenameFileFolder(form :NgForm, file_name : string,fileId:number){
 
-      if (this.selected_file_folder.parent_folder){
-        this.SiteService.renameFolder(form.value['edit-name'],fileId).pipe(take(1)).subscribe((data:unknown) =>{
-          this.selected_file_folder.name = form.value['edit-name']
-          this.closeRenamePanel();
-        },(error) =>{
-          console.error(error);
-          
-        })
-      }
-      else{
-
-      const fileExtension = file_name.split('.').pop();
+      if (this.selected_file_folder.file){
+        const fileExtension = file_name.split('.').pop();
       let new_name = `${form.value['edit-name']}.${fileExtension}`
       
       this.SiteService.renameFile(new_name,fileId).pipe(take(1)).subscribe((data:unknown) =>{
@@ -237,6 +229,16 @@ export class SubFolderComponent {
         console.error(error);
         
       })
+      }
+      else{
+        this.SiteService.renameFolder(form.value['edit-name'],fileId).pipe(take(1)).subscribe((data:unknown) =>{
+          this.selected_file_folder.name = form.value['edit-name']
+          this.closeRenamePanel();
+        },(error) =>{
+          console.error(error);
+          
+        })
+      
     }
   }
 
@@ -264,13 +266,15 @@ export class SubFolderComponent {
     else{
       folder_.id = folder.id
     }
+    console.log(folder_.id,this.draggedFileFolder.id);
+    
 
-    if (this.draggedFileFolder.parent_folder) {
-      if(this.draggedFileFolder.id != folder_.id)
-        this.move_folder(folder_.id);
+    if (this.draggedFileFolder.file) {
+      this.move_file(folder_.id);
     }
     else{
-      this.move_file(folder_.id);
+      if(this.draggedFileFolder.id != folder_.id)
+        this.move_folder(folder_.id);
     }
   }
 
@@ -313,7 +317,7 @@ export class SubFolderComponent {
       this.closePanel();
       this.toast.success('Folder created!')
     },(error) =>{
-      this.toast.error(error.error.Error);
+      this.toast.error(error.error.error);
       
     })
    }
