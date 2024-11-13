@@ -92,7 +92,7 @@ export class SiteService {
 
   }
 
-  moveFile(folderId:number,fileId:number){
+  moveFile(folderId:number | string,fileId:number){
     let headers = this.Auth.setHeaders() 
 
     let data = {
@@ -107,7 +107,7 @@ export class SiteService {
 
   }
 
-  moveFolder(parentFolderId:number,folderId:number){
+  moveFolder(parentFolderId:number | string,folderId:number){
     let headers = this.Auth.setHeaders() 
 
     let data = {

@@ -205,7 +205,7 @@ export class SubFolderComponent {
             this.ngOnInit();
             this.toast.success('Folder deleted!')
           },(error) =>{
-            console.error(error);
+            this.toast.error('Something went wrong!')
           })          
         }
       });
@@ -257,17 +257,15 @@ export class SubFolderComponent {
     event.preventDefault(); 
 
     let folder_  = {
-      id : -1,
+      id : -1 as number | string ,
     }
     
     if (folder.id == null){
-      folder_.id = Number(this.path_ids[folder-1])      
+      folder_.id = this.path_ids[folder-1]   
     }
     else{
       folder_.id = folder.id
-    }
-    console.log(folder_.id,this.draggedFileFolder.id);
-    
+    }    
 
     if (this.draggedFileFolder.file) {
       this.move_file(folder_.id);
@@ -279,7 +277,7 @@ export class SubFolderComponent {
   }
 
 
-  move_file(folderId:number){
+  move_file(folderId:number | string){
     if (this.draggedFileFolder) {
       this.SiteService.moveFile(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
         this.ngOnInit();
@@ -291,7 +289,7 @@ export class SubFolderComponent {
     }
   }
 
-  move_folder(folderId:number){
+  move_folder(folderId:number | string){
     if (this.draggedFileFolder) {
       this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
         this.ngOnInit();

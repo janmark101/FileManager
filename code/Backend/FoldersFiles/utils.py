@@ -65,5 +65,21 @@ def get_resource_parent_resources(resources : List[Dict[str,str]],
         resource_name = parent_resource[0]['name'].rsplit('/',1)
         resource_names.append(resource_name[1])
         resource_ids.append(parent_resource[0]['_id'])
-        
+    
     return resource_names,resource_ids
+
+
+def get_sub_resources_to_delete(resources : List[Dict[str,str]], 
+                               main_folder_id : str, 
+                               resources_ids : List[str]) -> List[str]:
+    
+    sub_resources = list(filter(lambda resource : resource['attributes']['parent_resource'][0] == main_folder_id ,resources))
+    
+    resources_ids.extend([resource['_id'] for resource in sub_resources])
+    
+    for resource in sub_resources:
+        get_sub_resources_to_delete(resources=resources,
+                                    main_folder_id=resource['_id'],
+                                    resources_ids=resources_ids)
+        
+    return resources_ids

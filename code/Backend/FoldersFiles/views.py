@@ -14,7 +14,7 @@ from Backend.settings import KEYCLOAK_ADMIN
 from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
 from keycloak.exceptions import KeycloakPostError, KeycloakPutError
 from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, get_sub_resources, get_resource_by_team, \
-    get_resource_parent_resources
+    get_resource_parent_resources, get_sub_resources_to_delete
 import uuid
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
@@ -173,10 +173,8 @@ class SubResourcesView(APIView):
         
         
         
-        resources = keycloak_admin.get_client_authz_resources(
-            client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
-        )
-                
+        resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
+
         resources_filtered = list(filter(lambda res : get_sub_resources(resource=res,
                                                             team_id=team.id,
                                                             parent_folder_id=fid), resources)) 
@@ -205,12 +203,10 @@ class CheckFolderPermissionView(APIView):
             client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
         )
 
-        find_permission = list(filter(lambda permission : get_permissions_for_resource(
-                                                                                permission=permission,
-                                                                                resource_id=fid,
-                                                                                user_id=request.user.id,
-                                                                                scope_key=get_scopes_id(scopes_list=scopes)
-                                                                                  ), permissions))
+        find_permission = list(filter(lambda permission : get_permissions_for_resource(permission=permission,
+                                                                                       resource_id=fid,
+                                                                                       user_id=request.user.id,
+                                                                                       scope_key=get_scopes_id(scopes_list=scopes)), permissions))
         
         if find_permission:
             return Response(status=status.HTTP_200_OK)
@@ -240,9 +236,24 @@ class FileObjectView(APIView):
     
 class FolderObjectView(APIView):    
     def delete(self,request,id):
-        keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
-                                                    resource_id=id)
-        return Response(status=status.HTTP_200_OK)
+        try :            
+            resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
+            
+            resources_ids = get_sub_resources_to_delete(resources=resources,main_folder_id=id, resources_ids=[])
+            print(resources_ids, "ta lista")
+            if resources_ids:
+                for resource_id in resources_ids:
+                    keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                                resource_id=resource_id)
+                    
+            keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                        resource_id=id)
+            
+            return Response(status=status.HTTP_200_OK)
+        
+        except Exception as e :
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 
     def patch(self,request,id):
         
