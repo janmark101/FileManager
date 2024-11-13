@@ -89,7 +89,14 @@
         <form (ngSubmit)="onAddFolder(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
           <input class="input" type="text" id="folder-name" placeholder="Folder name" name="folder-name" ngModel
             required />
-          <div class="buttonContainer mt-1">
+            <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;margin-top:1.5rem;">
+              <p >Choose permission:</p>
+              <select id="options" name="selectedOption" [(ngModel)]="selectedPermission" (change)="onPermissionChange($event)">
+                <option *ngFor="let permission of permissions" [value]="permission">{{ permission }}</option>
+              </select>
+            </div>
+            <p style="display:flex; font-size: 10px; justify-content: center; margin-top: 0.7rem;">This will set default permission for all users in team</p>
+          <div class="buttonContainer mt-4">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
               <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
           </div>

@@ -40,6 +40,9 @@ export class SubFolderComponent {
   isAddFolderOpen : boolean = false;
   team_id : number = -1
 
+  selectedPermission : string = "Default"
+  permissions :string[] = ["No Access", "Default", "Part Access" , "Full Access"]
+
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
  
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
@@ -77,24 +80,16 @@ export class SubFolderComponent {
   }
 
   navigateToSubfolder(folderId: number): void {
-    // this.SiteService.checkFolderPermission(this.accTeam.id,folderId).pipe(take(1)).subscribe((data=>{      
-    //   let url = this.router.url + "/" + folderId
-    //   this.router.navigateByUrl(url).then(()=>{
-    //     this.ngOnInit();
-    //   })
-    // }),error=>{
-    //   console.log("nie ma permisji");
-      
-    //   if (error.status == 401){
-    //     this.toast.error(error.error.Error)
-    //   }
-    // })
-
-    let url = this.router.url + "/" + folderId
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{      
+      let url = this.router.url + "/" + folderId
       this.router.navigateByUrl(url).then(()=>{
         this.ngOnInit();
       })
-
+    }),error=>{      
+      if (error.status == 401){
+        this.toast.error(error.error.Error)
+      }
+    })
   }
 
   navigateToUrl(folderId:string){
@@ -303,6 +298,7 @@ export class SubFolderComponent {
 
   addFolder(){
     this.closeAllDropdowns();
+    this.selectedPermission = "Default";
     this.isAddFolderOpen = true
   }
   
@@ -310,7 +306,7 @@ export class SubFolderComponent {
     let parent_folder = this.currentPath.at(-1)
     
     
-    this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id,'default').pipe(take(1)).subscribe((data:unknown) =>{
+    this.SiteService.addFolder(form.value['folder-name'],parent_folder,this.team_id,this.selectedPermission).pipe(take(1)).subscribe((data:unknown) =>{
       this.ngOnInit();
       this.closePanel();
       this.toast.success('Folder created!')
@@ -340,6 +336,11 @@ export class SubFolderComponent {
         })
     }
   }
+
+  onPermissionChange(event: Event) {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    this.selectedPermission = selectedValue
+    }
 
 
 }

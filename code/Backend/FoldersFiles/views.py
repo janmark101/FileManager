@@ -113,14 +113,14 @@ class ResourceForTeamView(APIView):
                         payload={
                             "type": "resource",
                             "logic": "POSITIVE",
-                            "description" : f"{resource_data['_id']}_{get_scope_id('full_access')}",
+                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{request.user.id}_{uuid.uuid4()}",
                             "resources": [
                                 resource_data['_id']
                                 ],
                             "scopes": [
-                                get_scope_id('full_access')]
+                                get_scope_id('Full Access')]
                             ,
                             "policies": [
                                 
@@ -240,7 +240,7 @@ class FolderObjectView(APIView):
             resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
             
             resources_ids = get_sub_resources_to_delete(resources=resources,main_folder_id=id, resources_ids=[])
-            print(resources_ids, "ta lista")
+
             if resources_ids:
                 for resource_id in resources_ids:
                     keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],

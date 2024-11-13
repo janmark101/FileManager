@@ -43,6 +43,9 @@ export class TeamComponent implements OnInit{
   isDropdownAddOpen : boolean = false;
   team_id : number = -1
 
+  selectedPermission : string = "Default"
+  permissions :string[] = ["No Access", "Default", "Part Access" , "Full Access"]
+
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
   ngOnInit(): void {
@@ -74,7 +77,7 @@ export class TeamComponent implements OnInit{
   }
 
   navigateToSubfolder(folderId: number): void {    
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['default','part_access','full_access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
       console.log(data);
            
       this.currentPath.push(folderId.toString());
@@ -107,39 +110,53 @@ export class TeamComponent implements OnInit{
 
   move_folder(folderId:number){
     if (this.draggedFileFolder) {
-      this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
-        this.ngOnInit();
-        this.draggedFileFolder = null;   
-      },(error)=>{
-        console.error(error);
-        this.draggedFileFolder = null;
-      })
+      this.SiteService.checkFolderPermission(this.accTeam.id,this.draggedFileFolder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+        this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
+          this.ngOnInit();
+          this.draggedFileFolder = null;   
+        },(error)=>{
+          console.error(error);
+          this.draggedFileFolder = null;
+        })
+      }),error=>{   
+        this.toast.error(error.error.Error)
+      }
+    )
     }
   }
 
 
 
   RenameFolder(folder:Folder){
-    this.closeAllDropdowns();
-    this.selected_file_folder = folder
-    this.isRenameOpen = true
+    this.SiteService.checkFolderPermission(this.accTeam.id,folder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.closeAllDropdowns();
+      this.selected_file_folder = folder
+      this.isRenameOpen = true
+    }),error=>{   
+        this.toast.error(error.error.Error)
+      }
+    )
   }
 
   DeleteFolder(folderId:number){
-    this.closeAllDropdowns();
-    this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
-    .subscribe(resp => {
-      if (resp.success===true) {
-        this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
-          this.ngOnInit();
-          this.toast.success('Folder deleted!')
-        },(error) =>{
-          console.error(error);
-          
-        })          
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.closeAllDropdowns();
+      this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
+      .subscribe(resp => {
+        if (resp.success===true) {
+          this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
+            this.ngOnInit();
+            this.toast.success('Folder deleted!')
+          },(error) =>{
+            console.error(error);
+            
+          })          
+        }
+      });
+    }),error=>{   
+        this.toast.error(error.error.Error)
       }
-    });
-
+    )
   }
 
   closePanel(){
@@ -189,12 +206,13 @@ closeDropdownOnClickOutside(event: MouseEvent) {
 
 addFolder(){
   this.closeAllDropdowns();
+  this.selectedPermission = "Default";
   this.isAddFolderOpen = true
 }
 
 onAddFolder(form :NgForm){
   
-  this.SiteService.addFolder(form.value['folder-name'],'None',this.team_id,'default').pipe(take(1)).subscribe((data:unknown) =>{
+  this.SiteService.addFolder(form.value['folder-name'],'None',this.team_id,this.selectedPermission).pipe(take(1)).subscribe((data:unknown) =>{
     this.ngOnInit();
     this.closePanel();
     this.toast.success('Folder created!')
@@ -204,5 +222,11 @@ onAddFolder(form :NgForm){
     
   })
 }
+
+
+onPermissionChange(event: Event) {
+  const selectedValue = (event.target as HTMLSelectElement).value;
+  this.selectedPermission = selectedValue
+  }
 
 }
