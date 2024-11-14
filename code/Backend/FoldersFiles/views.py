@@ -1,21 +1,23 @@
-from .models import File,Folder
+from .models import File
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from .models import File, Folder
+from .models import File
 from .serializers import FileSerializer
 from Auth.models import Team
 from django.shortcuts import get_object_or_404
-from Auth.serializers import TeamSerialzer
+from Auth.serializers import TeamSerialzer, UserPermissionSerializer
 from django.http import FileResponse, Http404
 import os
 from Backend.settings import KEYCLOAK_ADMIN
 from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
 from keycloak.exceptions import KeycloakPostError, KeycloakPutError
 from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, get_sub_resources, get_resource_by_team, \
-    get_resource_parent_resources, get_sub_resources_to_delete
+    get_resource_parent_resources, get_sub_resources_to_delete, get_scope_by_id
 import uuid
+from django.contrib.auth.models import User
+
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
                                                username=KEYCLOAK_ADMIN['USERNAME'],
@@ -129,6 +131,8 @@ class ResourceForTeamView(APIView):
                     )
 
                 for user in team.users.all():
+                    if user.id == request.user.id:
+                        continue
                     keycloak_admin.create_client_authz_scope_permission(
                         client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                         payload={
@@ -296,3 +300,23 @@ class FolderObjectView(APIView):
         
 
         
+class FolderPermissions(APIView):
+    def get(self,request,id):
+        resource_id = id
+        
+        try:
+            permissions = keycloak_admin.get_client_authz_permissions(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
+            
+            filtered_permissions = list(filter(lambda per : per['description'].split('_')[0] == resource_id, permissions))
+        
+            permissions_ = [{"user" :int(permission['name'].split('_')[0]), "permission" : get_scope_by_id(permission['description'].split('_')[1])} \
+                for permission in filtered_permissions]
+                        
+            for permission in permissions_ : 
+                user = get_object_or_404(User,id=permission['user'])
+                user_data = UserPermissionSerializer(user,many=False)
+                permission['user'] = user_data.data
+                
+            return Response({"permissions" : permissions_}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

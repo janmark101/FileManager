@@ -150,7 +150,7 @@ export class SiteService {
   }
 
 
-  checkFolderPermission(tid:number,fid:number,scopes:unknown){
+  checkFolderPermission(tid:number,fid:number|any,scopes:unknown){
     let data = {
       "scopes" : scopes
     }
@@ -160,4 +160,14 @@ export class SiteService {
       return throwError(error)
     }))
   }
+
+
+  getPermissions(resourceId : string){
+    return this.http.get(`${this.baseURL}resource/${resourceId}/permissions`)
+    .pipe(catchError(error =>{
+      console.log("Error: ",error);
+      return throwError(error)
+    }))
+  }
+
 }

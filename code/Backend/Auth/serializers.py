@@ -9,11 +9,14 @@ class UserTeamSerializer(serializers.ModelSerializer):
    
 class TeamSerialzer(serializers.ModelSerializer):
     users = UserTeamSerializer(many=True,read_only=True)
-    # team_owner = serializers.HiddenField(default=serializers.CurrentUserDefault())   
+ 
     class Meta:
         model=Team
         fields='__all__'
-        # read_only_fields = ['team_owner']
-                 
+       
+class UserPermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User
+        fields=['id','first_name', 'last_name']
         
         

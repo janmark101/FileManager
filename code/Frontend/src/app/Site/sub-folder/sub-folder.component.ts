@@ -187,24 +187,32 @@ export class SubFolderComponent {
     }
 
 
-    RenameFolder(folder:Folder){      
-      this.selected_file_folder = folder
-      this.isRenameOpen = true
+    RenameFolder(folder:Folder){  
+      this.SiteService.checkFolderPermission(this.accTeam.id,folder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+        this.selected_file_folder = folder
+        this.isRenameOpen = true
+       }),(error) =>{
+        this.toast.error(error.error.Error)
+       })
+    
     }
 
     DeleteFolder(folderId:number){
-      this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
-      .subscribe(resp => {
-        if (resp.success===true) {
-          this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
-            this.ngOnInit();
-            this.toast.success('Folder deleted!')
-          },(error) =>{
-            this.toast.error('Something went wrong!')
-          })          
-        }
-      });
-
+      this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+        this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
+        .subscribe(resp => {
+          if (resp.success===true) {
+            this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
+              this.ngOnInit();
+              this.toast.success('Folder deleted!')
+            },(error) =>{
+              this.toast.error('Something went wrong!')
+            })          
+          }
+        });
+       }),(error) =>{
+        this.toast.error(error.error.Error)
+       })
     }
 
     closeRenamePanel(){
@@ -285,15 +293,19 @@ export class SubFolderComponent {
   }
 
   move_folder(folderId:number | string){
-    if (this.draggedFileFolder) {
-      this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
-        this.ngOnInit();
-        this.draggedFileFolder = null;   
-      },(error)=>{
-        console.error(error);
-        this.draggedFileFolder = null;
-      })
-    }
+    this.SiteService.checkFolderPermission(this.accTeam.id,this.draggedFileFolder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+      if (this.draggedFileFolder) {
+        this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
+          this.ngOnInit();
+          this.draggedFileFolder = null;   
+        },(error)=>{
+          console.error(error);
+          this.draggedFileFolder = null;
+        })
+      }
+     }),(error) =>{
+      this.toast.error(error.error.Error)
+     })
   }
 
   addFolder(){

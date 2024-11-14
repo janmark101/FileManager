@@ -7,8 +7,18 @@ scopes = {
     "Part Access" : "73fe5ade-a96e-4916-8be6-5bfae64a1c59"
 }
 
+scopes_id = {
+    "490ad6d1-69ab-43c3-931e-6827efdfbfd5" : "Default",
+    "47f367d0-3290-4a8f-aaf2-15e2ee5658be" : "Full Access",
+    "05634f03-8dce-4f7a-9104-44300e9b639b" : "No Access",
+    "73fe5ade-a96e-4916-8be6-5bfae64a1c59" : "Part Access"
+}
+
 def get_scope_id(scope : str) -> str:    
     return scopes[scope]
+
+def get_scope_by_id(id: str) -> str:
+    return scopes_id[id]
 
 
 def get_scopes_id(scopes_list: List[str]) -> List[str]:
@@ -83,3 +93,9 @@ def get_sub_resources_to_delete(resources : List[Dict[str,str]],
                                     resources_ids=resources_ids)
         
     return resources_ids
+
+def get_all_permissions_for_resource(resource_id : str, permissions : List[Dict[str,str]]) -> List[Dict[str,str]]:
+    
+    filtered_permissions = list(filter(lambda per : per['description'].split('_')[0] == resource_id, permissions))
+    
+    

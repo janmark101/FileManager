@@ -57,6 +57,7 @@
       <div class="dropdown-content" [ngClass]="{'show': isDropdownFolderOpen[i]}" *ngIf="isDropdownFolderOpen[i]">
         <a (click)="RenameFolder(folder)">Rename</a>
         <a (click)="DeleteFolder(folder.id)">Delete</a>
+        <a (click)="ManagePermissions(folder.id)">Permissions</a>
       </div>
     </div>
   </div>
@@ -66,7 +67,7 @@
 
 
 <div class="modal" *ngIf="isRenameOpen">
-  <div class="SizeModalContent">
+  <div class="SizeModalContent" style="height: 14rem;">
       <span class="close" (click)="closePanel()">&times;</span>
       <p class="text-2xl font-bold ">Change name</p>
       <form (ngSubmit)="onRenameFileFolder(rename,selected_file_folder.name,selected_file_folder.id)" class="formContainer mt-4"  #rename="ngForm">
@@ -83,7 +84,7 @@
 
 
 <div class="modal" *ngIf="isAddFolderOpen">
-  <div class="SizeModalContent">
+  <div class="SizeModalContent" style="  height: 19.4rem;">
       <span class="close" (click)="closePanel()">&times;</span>
         <p class="text-2xl font-bold ">New folder</p>
         <form (ngSubmit)="onAddFolder(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
@@ -99,6 +100,38 @@
           <div class="buttonContainer mt-4">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
               <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+          </div>
+      </form>
+  </div>
+</div>
+
+
+<div class="modal" *ngIf="isMenagePermissionOpen">
+  <div class="SizeModalContent" style="height: 40rem; width: 65rem;">
+      <span class="close" (click)="closePanel()">&times;</span>
+        <p class="text-2xl font-bold ">Permissions</p>
+        <form (ngSubmit)="onManagePermissions()" class="formContainer mt-4"  #addFolder="ngForm" style="height: 100%;display: flex; flex-direction: column; justify-content: space-between;">
+
+          <div class="permission-box-container" >
+            <ng-container *ngFor="let permission of ['No Access', 'Default', 'Part Access', 'Full Access']">
+              <div  style="flex:1; text-align: center;">
+                <h3>{{ permission }}</h3>
+              
+              <div class="permission-box" [ngClass]="permission.toLowerCase() + 'Box'">
+                <ng-container *ngFor="let perm of ResourcePermissions">
+                  <div *ngIf="perm.permission === permission" style="width: 100%; display: flex; flex-direction: column; align-items: start;">
+                    <p>{{ perm.user.first_name }} {{ perm.user.last_name }}</p>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+            </ng-container>
+          </div>
+
+
+         <div class="buttonContainer mt-4" >
+            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
+            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
           </div>
       </form>
   </div>

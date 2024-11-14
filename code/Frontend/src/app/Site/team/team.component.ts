@@ -12,6 +12,7 @@ import { NgForm } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 
 
+
 @Component({
   selector: 'app-team',
   templateUrl: './team.component.html',
@@ -45,6 +46,10 @@ export class TeamComponent implements OnInit{
 
   selectedPermission : string = "Default"
   permissions :string[] = ["No Access", "Default", "Part Access" , "Full Access"]
+
+  isMenagePermissionOpen : boolean = false
+
+  ResourcePermissions : any[] =  []
 
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
@@ -162,6 +167,7 @@ export class TeamComponent implements OnInit{
   closePanel(){
     this.isRenameOpen = false;
     this.isAddFolderOpen = false;
+    this.isMenagePermissionOpen = false;
   }
 
   onRenameFileFolder(form :NgForm, file_name : string,fileId:number){
@@ -227,6 +233,30 @@ onAddFolder(form :NgForm){
 onPermissionChange(event: Event) {
   const selectedValue = (event.target as HTMLSelectElement).value;
   this.selectedPermission = selectedValue
+  }
+
+
+  ManagePermissions(folderId:any){
+    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.SiteService.getPermissions(folderId).pipe(take(1)).subscribe((data:any)=>{
+        this.closeAllDropdowns();
+        this.isMenagePermissionOpen = true
+        console.log(data);
+        
+        this.ResourcePermissions = data.permissions
+      },(error)=>{
+        this.toast.error('Something went wrong!')
+      })
+    }),error=>{   
+      this.toast.error(error.error.Error)
+    }
+  )
+    
+  }
+
+
+  onManagePermissions(){
+
   }
 
 }
