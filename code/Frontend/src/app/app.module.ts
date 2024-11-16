@@ -24,7 +24,7 @@ import { initializeKeycloak } from 'src/keycloak-init';
 import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } from 'keycloak-angular';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JoinTeamComponent } from './Site/join-team/join-team.component';
-
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 
 @NgModule({
@@ -52,6 +52,7 @@ import { JoinTeamComponent } from './Site/join-team/join-team.component';
     BrowserAnimationsModule,
     ToastrModule.forRoot(),
     KeycloakAngularModule,  
+    DragDropModule
   ],
   providers: [
     {

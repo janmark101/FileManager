@@ -10,6 +10,8 @@ import {
 } from '@costlydeveloper/ngx-awesome-popup';
 import { NgForm } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
+import { LoginComponent } from '../login/login.component';
 
 
 
@@ -50,6 +52,7 @@ export class TeamComponent implements OnInit{
   isMenagePermissionOpen : boolean = false
 
   ResourcePermissions : any[] =  []
+  ChangedResourcePermissions : any[] = []
 
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
@@ -241,8 +244,8 @@ onPermissionChange(event: Event) {
       this.SiteService.getPermissions(folderId).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
         this.isMenagePermissionOpen = true
-        console.log(data);
-        
+        this.selected_file_folder = folderId
+        this.ChangedResourcePermissions = []
         this.ResourcePermissions = data.permissions
       },(error)=>{
         this.toast.error('Something went wrong!')
@@ -256,7 +259,58 @@ onPermissionChange(event: Event) {
 
 
   onManagePermissions(){
+    if (this.ChangedResourcePermissions.length >=1){
+      this.SiteService.changeResourcePermissions(this.selected_file_folder, this.ChangedResourcePermissions).pipe(take(1)).subscribe((data =>{
+        this.closePanel()
+        this.toast.success('Permissions changed!')
+      }),error=>{
+        this.toast.error('Something went wrong!')
+      })
+    }
+    else{
+      this.closePanel()
+    }
+  }
 
+
+
+  getPermissionsForBox(permission: string) {
+    return this.ResourcePermissions.filter(perm => perm.permission === permission);
+  }
+
+
+  drag(event: DragEvent, perm: any) {
+    event.dataTransfer?.setData('text/plain', JSON.stringify(perm));
+  }
+
+  allowDrop(event: DragEvent) {
+    event.preventDefault(); 
+  }
+
+  drop(event: DragEvent, permission: string) {
+    event.preventDefault();
+    const data = event.dataTransfer?.getData('text/plain');
+
+    if (data) {
+      const perm = JSON.parse(data);
+      this.updateUserPermission(perm, permission);
+    }
+  }
+
+
+  updateUserPermission(perm: any, permission : string) {
+    
+    const index = this.ResourcePermissions.findIndex(item => item.user.id === perm.user.id)
+
+    if (index != -1) {      
+      if (this.ResourcePermissions[index].permission == permission)
+        return
+      this.ResourcePermissions[index].permission = permission
+      this.ChangedResourcePermissions.push(this.ResourcePermissions[index])
+    }
+
+    
+    
   }
 
 }

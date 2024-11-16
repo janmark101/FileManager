@@ -201,7 +201,15 @@
     background-color: #d4edda;
   }
 
-
+  .draggable-user {
+    cursor: grab;
+  }
+  
+  /* Cursor when the user is being dragged */
+  .draggable-user.dragging {
+    cursor: grabbing;
+  }
+  
 
 
 

@@ -170,4 +170,17 @@ export class SiteService {
     }))
   }
 
+  changeResourcePermissions(resourceId : string, permissions : any[]){
+
+    let data = {
+      "permissions" : permissions
+    }
+
+    return this.http.post(`${this.baseURL}resource/${resourceId}/permissions`, data)
+    .pipe(catchError(error =>{
+      console.log("Error: ",error);
+      return throwError(error)
+    }))
+  }
+
 }

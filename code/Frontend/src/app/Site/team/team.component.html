@@ -112,19 +112,28 @@
         <p class="text-2xl font-bold ">Permissions</p>
         <form (ngSubmit)="onManagePermissions()" class="formContainer mt-4"  #addFolder="ngForm" style="height: 100%;display: flex; flex-direction: column; justify-content: space-between;">
 
-          <div class="permission-box-container" >
-            <ng-container *ngFor="let permission of ['No Access', 'Default', 'Part Access', 'Full Access']">
-              <div  style="flex:1; text-align: center;">
+          <div class="permission-box-container">
+            <ng-container *ngFor="let permission of permissions; let i = index">
+              <div style="flex: 1; text-align: center;">
                 <h3>{{ permission }}</h3>
-              
-              <div class="permission-box" [ngClass]="permission.toLowerCase() + 'Box'">
-                <ng-container *ngFor="let perm of ResourcePermissions">
-                  <div *ngIf="perm.permission === permission" style="width: 100%; display: flex; flex-direction: column; align-items: start;">
-                    <p>{{ perm.user.first_name }} {{ perm.user.last_name }}</p>
-                  </div>
-                </ng-container>
+                <div
+                  class="permission-box"
+                  [ngClass]="permission.toLowerCase() + 'Box'"
+                  (dragover)="allowDrop($event)"
+                  (drop)="drop($event, permission)"
+                >
+                  <ng-container *ngFor="let perm of getPermissionsForBox(permission)">
+                    <div
+                      class="draggable-user"
+                      draggable="true"
+                      (dragstart)="drag($event, perm)"
+                      style="width: 100%; display: flex; flex-direction: column; align-items: start; overflow-y: hidden;"
+                    >
+                      <p>{{ perm.user.first_name }} {{ perm.user.last_name }}</p>
+                    </div>
+                  </ng-container>
+                </div>
               </div>
-            </div>
             </ng-container>
           </div>
 

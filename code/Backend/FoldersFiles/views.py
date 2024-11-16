@@ -11,7 +11,7 @@ from Auth.serializers import TeamSerialzer, UserPermissionSerializer
 from django.http import FileResponse, Http404
 import os
 from Backend.settings import KEYCLOAK_ADMIN
-from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
+from keycloak import KeycloakAdmin, KeycloakOpenIDConnection, KeycloakUMA
 from keycloak.exceptions import KeycloakPostError, KeycloakPutError
 from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, get_sub_resources, get_resource_by_team, \
     get_resource_parent_resources, get_sub_resources_to_delete, get_scope_by_id
@@ -29,6 +29,8 @@ keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
 
 
 keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
+
+keycloak_uma = KeycloakUMA(connection=keycloak_connection)
 
 
 def download_file(request, file_path):
@@ -129,6 +131,7 @@ class ResourceForTeamView(APIView):
                             ]
                         }
                     )
+                
 
                 for user in team.users.all():
                     if user.id == request.user.id:
@@ -299,18 +302,17 @@ class FolderObjectView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
 
-        
+import requests      
 class FolderPermissions(APIView):
     def get(self,request,id):
         resource_id = id
         
         try:
             permissions = keycloak_admin.get_client_authz_permissions(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
-            
             filtered_permissions = list(filter(lambda per : per['description'].split('_')[0] == resource_id, permissions))
         
-            permissions_ = [{"user" :int(permission['name'].split('_')[0]), "permission" : get_scope_by_id(permission['description'].split('_')[1])} \
-                for permission in filtered_permissions]
+            permissions_ = [{"user" :int(permission['name'].split('_')[0]), "permission" : get_scope_by_id(permission['description'].split('_')[1]), "permission_name" : permission['name'], \
+                "permission_id" : permission['id']} for permission in filtered_permissions]
                         
             for permission in permissions_ : 
                 user = get_object_or_404(User,id=permission['user'])
@@ -319,4 +321,52 @@ class FolderPermissions(APIView):
                 
             return Response({"permissions" : permissions_}, status=status.HTTP_200_OK)
         except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        
+    def post(self,request,id):
+        print(request.data.get('permissions'))
+        
+        try:
+            for perm in request.data.get('permissions'):
+                
+                access_token = keycloak_connection.token['access_token']
+
+                url = f"{KEYCLOAK_ADMIN['URL']}/admin/realms/Realm-dev/clients/{KEYCLOAK_ADMIN['CLIENT_ID_KEY']}/authz/resource-server/policy/{perm['permission_id']}"
+
+                headers = {
+                    'Authorization': f'Bearer {access_token}'
+                }
+                
+                response = requests.delete(url, headers=headers)
+                
+                
+                payload={
+                    "type": "resource",
+                    "logic": "POSITIVE",
+                    "description" : f"{id}_{get_scope_id(perm['permission'])}",
+                    "decisionStrategy": "UNANIMOUS",
+                    "name": f"{perm['permission_name']}",
+                    "resources": [
+                        id
+                        ],
+                    "scopes": [
+                        get_scope_id(perm['permission'])
+                        ]
+                    ,
+                    "policies": [
+                        
+                        ]
+                    }
+                       
+                res = keycloak_admin.create_client_authz_scope_permission(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                                                                          payload=payload)
+                        
+                
+                
+                
+                
+            return Response(status=status.HTTP_200_OK)
+        except Exception as e:
+            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
