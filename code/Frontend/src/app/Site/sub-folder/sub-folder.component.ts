@@ -26,7 +26,13 @@ export class SubFolderComponent {
     name : "",
     "users" : [],
     created_at :  new Date(),
-    team_owner : -1,
+    team_owner : {
+      id : -1,
+      first_name : '',
+      email : '',
+      last_name : '',
+      username : '',
+    },
     adding_link_code : ""
   }
 
@@ -55,6 +61,7 @@ export class SubFolderComponent {
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
  
+  userInfo : number = -2;
 
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
@@ -66,11 +73,14 @@ export class SubFolderComponent {
 
   fetchSubResourcesFiles(){    
     this.SiteService.getSubResourcesFiles(Number(this.currentPath[2]),this.currentPath.at(-1)).pipe(take(1)).subscribe((data:Response) =>{
+      console.log(data);
+      
       this.resources = data.resources;
       this.teamDescription = data.team;
       this.files = data.files;
       this.path = data.resource_names;
       this.path_ids = data.resource_ids
+      this.userInfo = data.user;
       this.makePath();
     },(error:any) =>{
 
@@ -78,12 +88,11 @@ export class SubFolderComponent {
   }
 
   makePath(){
-    this.path.unshift(this.teamDescription.name)
-    
+    this.path.unshift(this.teamDescription!.name)
   }
 
   navigateToSubResources(resourceID : string): void {
-    this.SiteService.checkResourcePermission(this.teamDescription.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{      
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{      
       let url = this.router.url + "/" + resourceID
       this.router.navigateByUrl(url).then(()=>{
         this.ngOnInit();
@@ -165,17 +174,22 @@ export class SubFolderComponent {
       // })
   }
 
-  moveResource(resourceID : string){
-    this.SiteService.checkResourcePermission(this.teamDescription.id,this.draggedFileOrResource!.id.toString(),['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+  moveResource(resourceID : string){    
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,this.draggedFileOrResource!.id.toString(),['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Part Access', 'Full Access']).pipe(take(1)).subscribe((data => {
         this.SiteService.moveResource(resourceID,this.draggedFileOrResource!.id.toString()).pipe(take(1)).subscribe((data:unknown)=>{
-          this.ngOnInit();
-          this.draggedFileOrResource = null;   
+            this.ngOnInit();
+            this.draggedFileOrResource = null;   
         },(error)=>{
-          this.draggedFileOrResource = null;
-        })
+            this.draggedFileOrResource = null;
+            this.toast.error('Something went wrong!')
+          })
+        }),(error) =>{
+          this.toast.error(error.error.Error)
+        }) 
       }),(error) =>{
       this.toast.error(error.error.Error)
-      })
+    })
   }
   
 
@@ -235,7 +249,7 @@ export class SubFolderComponent {
       if (resp.success===true) {
         this.SiteService.deleteFile(fileID).pipe(take(1)).subscribe((data:unknown) =>{
           this.ngOnInit();
-          this.toast.success('File deleted!')
+          this.toast.info('File deleted!')
         },(error) =>{
           console.error(error);
         })          
@@ -246,7 +260,7 @@ export class SubFolderComponent {
 
 
   renameResource(resource : Resource){  
-    this.SiteService.checkResourcePermission(this.teamDescription.id,resource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,resource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.selectedFileOrResource = resource
       this.isModalOpen['isRename'] = true;
     }),(error) =>{
@@ -278,7 +292,7 @@ export class SubFolderComponent {
 
 
   deleteResource(resourceID : string){
-    this.SiteService.checkResourcePermission(this.teamDescription.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline').subscribe(resp => {
         if (resp.success===true) {
           this.SiteService.deleteResource(resourceID).pipe(take(1)).subscribe((data:unknown) =>{
@@ -296,9 +310,13 @@ export class SubFolderComponent {
 
 
   addResource(){
-    this.closeAllDropdowns();
-    this.permissionsData['selectedPermission'] = "Default";
-    this.isModalOpen['isAddResource'] = true;
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,this.currentPath.at(-1),['Part Access', 'Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.closeAllDropdowns();
+      this.permissionsData['selectedPermission'] = "Default";
+      this.isModalOpen['isAddResource'] = true;
+    }),(error) =>{
+      this.toast.error(error.error.Error)
+    })
   }
 
 
@@ -311,7 +329,7 @@ export class SubFolderComponent {
   onAddResource(form :NgForm){
     let parentResource = this.currentPath.at(-1)
     
-    this.SiteService.addResource(form.value['folder-name'],parentResource,this.teamDescription.id,this.permissionsData['selectedPermission']).pipe(take(1)).subscribe((data:unknown) =>{
+    this.SiteService.addResource(form.value['folder-name'],parentResource,this.teamDescription!.id,this.permissionsData['selectedPermission']).pipe(take(1)).subscribe((data:unknown) =>{
       this.ngOnInit();
       this.closePanel();
       this.toast.success('Folder created!')
@@ -343,7 +361,7 @@ export class SubFolderComponent {
 
  
   managePermissions(resource : Resource){
-    this.SiteService.checkResourcePermission(this.teamDescription.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.SiteService.getPermissions(resource.id).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
         this.isModalOpen['isManagePermission'] = true;

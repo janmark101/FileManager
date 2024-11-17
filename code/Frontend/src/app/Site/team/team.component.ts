@@ -3,13 +3,15 @@ import { SiteService } from '../Services/site.service';
 import { take } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
-import { createDefaultDropDownState, createDefaultModalState, createDefaultPermissionsData, DropDownState, ModalState, PermissionsDataState, Resource, ResourcePermissions, Team } from '../Models/Models';
+import { createDefaultDropDownState, createDefaultModalState, createDefaultPermissionsData, DropDownState, ModalState, PermissionsDataState, Resource, ResourcePermissions, Team, User } from '../Models/Models';
 import {
   ConfirmBoxEvokeService,
   
 } from '@costlydeveloper/ngx-awesome-popup';
 import { NgForm } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { TeamService } from '../Services/team.service';
+
 
 
 
@@ -28,7 +30,13 @@ export class TeamComponent implements OnInit{
     name : "",
     "users" : [],
     created_at :  new Date(),
-    team_owner : -1,
+    team_owner : {
+      id : -1,
+      first_name : '',
+      email : '',
+      last_name : '',
+      username : '',
+    },
     adding_link_code : ""
   }
 
@@ -49,10 +57,13 @@ export class TeamComponent implements OnInit{
     id : ""
   }
 
+  userInfo : number = -2;
+
   permissionsData : PermissionsDataState = createDefaultPermissionsData();
 
 
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService, 
+    private toast:ToastrService, private teamService: TeamService) {}
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params=>{     
@@ -62,6 +73,7 @@ export class TeamComponent implements OnInit{
     this.route.params.subscribe(params => {
       this.currentPath = this.buildPath(params['id']);
     });
+
     
   }
 
@@ -73,6 +85,8 @@ export class TeamComponent implements OnInit{
     this.SiteService.getResources(teamID).pipe(take(1)).subscribe((data:any) =>{
       this.Resources = data.resources;
       this.TeamDescription = data.team;
+      this.userInfo = data.user;
+      console.log(data.team);
       
     },(error:any) =>{
       
@@ -80,11 +94,11 @@ export class TeamComponent implements OnInit{
   }
 
   navigateToSubResources(resourceID: string): void {    
-    this.SiteService.checkResourcePermission(this.TeamDescription.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{            
+    this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{            
       this.currentPath.push(resourceID.toString());
       this.router.navigate([`/teams`, ...this.currentPath]);
     }),error=>{   
-      if (error.status == 401){
+      if (error.status == 403){
         this.toast.error(error.error.Error)
       }
     })
@@ -118,25 +132,28 @@ export class TeamComponent implements OnInit{
 
   moveResource(resourceID:string){
     if (this.draggedResource) {
-      this.SiteService.checkResourcePermission(this.TeamDescription.id,this.draggedResource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
-        this.SiteService.moveResource(resourceID,this.draggedResource!.id).pipe(take(1)).subscribe((data:unknown)=>{
-          this.ngOnInit();
-          this.draggedResource = null;   
-        },(error)=>{
-          console.error(error);
-          this.draggedResource = null;
-        })
-      }),error=>{   
+      this.SiteService.checkResourcePermission(this.TeamDescription!.id,this.draggedResource!.id.toString(),['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+        this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Part Access', 'Full Access']).pipe(take(1)).subscribe((data => {
+          this.SiteService.moveResource(resourceID,this.draggedResource!.id.toString()).pipe(take(1)).subscribe((data:unknown)=>{
+              this.ngOnInit();
+              this.draggedResource = null;   
+          },(error)=>{
+              this.draggedResource = null;
+              this.toast.error('Something went wrong!')
+            })
+          }),(error) =>{
+            this.toast.error(error.error.Error)
+          }) 
+        }),(error) =>{
         this.toast.error(error.error.Error)
-      }
-    )
+      })
     }
   }
 
 
 
   renameResource(resource:Resource){
-    this.SiteService.checkResourcePermission(this.TeamDescription.id,resource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.TeamDescription!.id,resource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.closeAllDropdowns();
       this.selectedResource = resource
       this.isModalOpen['isRename'] = true;
@@ -161,14 +178,14 @@ export class TeamComponent implements OnInit{
 
 
   deleteResource(resourceID:string){
-    this.SiteService.checkResourcePermission(this.TeamDescription.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.closeAllDropdowns();
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
       .subscribe(resp => {
         if (resp.success===true) {
           this.SiteService.deleteResource(resourceID).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
-            this.toast.success('Folder deleted!')
+            this.toast.info('Folder deleted!')
           },(error) =>{            
           })          
         }
@@ -180,8 +197,26 @@ export class TeamComponent implements OnInit{
   }
 
 
+  addResource(){
+    this.closeAllDropdowns();
+    this.permissionsData['selectedPermission'] = "Default";
+    this.isModalOpen['isAddResource'] = true;
+  }
+
+
+  onAddResource(form :NgForm){
+    this.SiteService.addResource(form.value['folder-name'],'None',this.TeamDescription!.id,this.permissionsData['selectedPermission']).pipe(take(1)).subscribe((data:unknown) =>{
+      this.ngOnInit();
+      this.closePanel();
+      this.toast.success('Folder created!')
+    },(error) =>{
+      this.toast.error(error.error.error);
+    })
+  }
+
+
   managePermissions(resource : Resource){
-    this.SiteService.checkResourcePermission(this.TeamDescription.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+    this.SiteService.checkResourcePermission(this.TeamDescription!.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.SiteService.getPermissions(resource.id).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
         this.isModalOpen['isManagePermission'] = true;
@@ -241,28 +276,9 @@ export class TeamComponent implements OnInit{
   }
 
 
-
-  addResource(){
-    this.closeAllDropdowns();
-    this.permissionsData['selectedPermission'] = "Default";
-    this.isModalOpen['isAddResource'] = true;
-  }
-
-
   onPermissionChange(event: Event) {
     const selectedValue = (event.target as HTMLSelectElement).value;
     this.permissionsData['selectedPermission'] = selectedValue
-  }
-
-
-  onAddResource(form :NgForm){
-    this.SiteService.addResource(form.value['folder-name'],'None',this.TeamDescription.id,this.permissionsData['selectedPermission']).pipe(take(1)).subscribe((data:unknown) =>{
-      this.ngOnInit();
-      this.closePanel();
-      this.toast.success('Folder created!')
-    },(error) =>{
-      this.toast.error(error.error.error);
-    })
   }
 
 
@@ -301,6 +317,21 @@ export class TeamComponent implements OnInit{
       this.permissionsData['ResourcePermissions'][index].permission = permission
       this.permissionsData['ChangedResourcePermissions'].push(this.permissionsData['ResourcePermissions'][index])
     }
+  }
+
+
+  leaveTeam(){
+    this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to leave this team?', 'Confirm', 'Decline')
+    .subscribe(resp => {
+      if (resp.success===true) {
+        this.teamService.deleteUser(this.TeamDescription!.id, this.userInfo).pipe(take(1)).subscribe((data:unknown) =>{
+          this.toast.info('Team was abandoned')
+          this.router.navigate([""])
+        },(error =>{
+          console.error(error);
+        })) 
+      }
+    });
   }
 
 }

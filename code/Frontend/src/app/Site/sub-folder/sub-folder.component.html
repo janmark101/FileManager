@@ -6,12 +6,12 @@
   </div>
 
   <div class="position: absolute; left: 50%; transform: translateX(-50%);" >
-    <h1 class="name   text-center">{{teamDescription.name}}</h1>
+    <h1 class="name   text-center">{{teamDescription!.name}}</h1>
   </div>
 
-  <div class="mr-12" [routerLink] ="['/teams',teamDescription.id,'settings']">
+  <div class="mr-12" [routerLink] ="['/teams',teamDescription!.id,'settings']" >
     <a  style="cursor: pointer;">
-      <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings" />
+      <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings"  *ngIf="teamDescription!.team_owner.id == userInfo"/>
     </a>
   </div>
 
@@ -145,7 +145,7 @@
                   <ng-container *ngFor="let perm of getPermissionsForBox(permission)">
                     <div
                       class="draggable-user"
-                      draggable="true"
+                      [draggable]="perm.user.id!=teamDescription.team_owner.id"
                       (dragstart)="dragUser($event, perm)"
                       style="width: 100%; display: flex; flex-direction: column; align-items: start; overflow-y: hidden;"
                     >

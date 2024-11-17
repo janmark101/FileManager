@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { AuthServiceService } from './auth-service.service';
 import { catchError, Subject, throwError } from 'rxjs';
 import { Response, Resource, ResourcePermissions } from '../Models/Models';
@@ -64,7 +64,7 @@ export class SiteService {
     }))
   }
 
-  deleteResource(resourceID:string){
+  deleteResource(resourceID:string, ){
     return this.http.delete(`${this.baseURL}resource/${resourceID}/`)
     .pipe(catchError(error =>{
       return throwError(error)
@@ -116,7 +116,7 @@ export class SiteService {
   }
 
 
-  checkResourcePermission(teamID : number, resourceID : string, scopes : unknown){
+  checkResourcePermission(teamID : number, resourceID : unknown, scopes : unknown){
     let data = {
       "scopes" : scopes
     }

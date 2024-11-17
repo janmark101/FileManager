@@ -39,7 +39,6 @@ export class TeamService {
 
     return this.http.get<Team>(`${this.baseURL}${team_id}/`, {})
     .pipe(catchError(error =>{
-      console.log("Error fetching teams:", error);
       return throwError(error);
     }))
   }
@@ -48,25 +47,30 @@ export class TeamService {
 
     return this.http.delete(`${this.baseURL}${team_id}/`, {})
     .pipe(catchError(error =>{
-      console.log("Error deleting team:", error);
       return throwError(error);
     }))
   }
 
   joinTeam(code:number){
 
-    return this.http.get(`${this.baseURL}join/${code}`)
+    return this.http.get(`${this.baseURL}join/${code}/`)
     .pipe(catchError(error =>{
-      console.log("Error joining team:", error);
       return throwError(error);
     }))
   }
 
 
   generateAddingLink(teamID : number){
-    return this.http.get(`${this.baseURL}${teamID}/addinglink`)
+    return this.http.get(`${this.baseURL}${teamID}/addinglink/`)
     .pipe(catchError(error =>{
-      console.log("Error generating link: ", error);
+      return throwError(error);
+    }))
+  }
+
+
+  deleteUser(teamID : number, userID : number){
+    return this.http.delete(`${this.baseURL}${teamID}/${userID}/`)
+    .pipe(catchError(error => {
       return throwError(error);
     }))
   }

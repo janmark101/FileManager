@@ -17,6 +17,7 @@ from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, ge
     get_resource_parent_resources, get_sub_resources_to_delete, get_scope_by_id
 import uuid
 from django.contrib.auth.models import User
+from functools import wraps
 
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
@@ -30,7 +31,7 @@ keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
 
 keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
-keycloak_uma = KeycloakUMA(connection=keycloak_connection)
+# keycloak_uma = KeycloakUMA(connection=keycloak_connection)
 
 
 def download_file(request, file_path):
@@ -78,7 +79,7 @@ class ResourceForTeamView(APIView):
         
         team_serializer = TeamSerialzer(team,many=False)
 
-        return Response({"team" :team_serializer.data,"resources" : fixed_resources},status=status.HTTP_200_OK)
+        return Response({"team" :team_serializer.data,"resources" : fixed_resources, "user" : request.user.id},status=status.HTTP_200_OK)
     
     def post(self,request,id):
         team = get_object_or_404(Team, id=id)
@@ -120,6 +121,27 @@ class ResourceForTeamView(APIView):
                             "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{request.user.id}_{uuid.uuid4()}",
+                            "resources": [
+                                resource_data['_id']
+                                ],
+                            "scopes": [
+                                get_scope_id('Full Access')]
+                            ,
+                            "policies": [
+                                
+                            ]
+                        }
+                    )
+                
+                if team.team_owner.id != request.user.id:
+                    keycloak_admin.create_client_authz_scope_permission(
+                        client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
+                        payload={
+                            "type": "resource",
+                            "logic": "POSITIVE",
+                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}",
+                            "decisionStrategy": "UNANIMOUS",
+                            "name": f"{team.team_owner.id}_{uuid.uuid4()}",
                             "resources": [
                                 resource_data['_id']
                                 ],
@@ -181,7 +203,7 @@ class SubResourcesView(APIView):
         
         
         resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
-
+        print(team.id)
         resources_filtered = list(filter(lambda res : get_sub_resources(resource=res,
                                                             team_id=team.id,
                                                             parent_folder_id=fid), resources)) 
@@ -197,7 +219,7 @@ class SubResourcesView(APIView):
         resource_names, resource_ids = get_resource_parent_resources(resources=resources,
                                                                       resource_id=fid)
         
-        return Response({"resources" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1] },status=status.HTTP_200_OK)       
+        return Response({"resources" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1], "user" : request.user.id },status=status.HTTP_200_OK)       
         
 
 class CheckFolderPermissionView(APIView):
@@ -221,6 +243,35 @@ class CheckFolderPermissionView(APIView):
         return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN)   
 
 
+# def checkPermission(func):
+#     @wraps(func)
+#     def wrap(self,request, *args, **kwargs):
+#         print('dekorator')
+#         print(args,kwargs)
+        
+#         resource_id = kwargs.get('id')
+#         scopes = request.data.get('scopes')
+#         if not scopes:
+#             scopes = request.query_params.get('extraParam').split('/')
+#             print(scopes)
+        
+#         permissions = keycloak_admin.get_client_authz_permissions(
+#             client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
+#         )
+
+#         find_permission = list(filter(lambda permission : get_permissions_for_resource(permission=permission,
+#                                                                                     resource_id=resource_id,
+#                                                                                     user_id=request.user.id,
+#                                                                                     scope_key=get_scopes_id(scopes_list=scopes)), permissions))
+        
+#         if find_permission:
+#             return func(self, request, *args, **kwargs)
+                
+#         return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN) 
+#     return wrap
+
+    
+
 class FileObjectView(APIView):
     permission_classes=[AllowAny]
     
@@ -241,7 +292,8 @@ class FileObjectView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     
-class FolderObjectView(APIView):    
+class FolderObjectView(APIView):  
+
     def delete(self,request,id):
         try :            
             resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
@@ -266,19 +318,18 @@ class FolderObjectView(APIView):
         
         resource = keycloak_admin.get_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                                                             resource_id=id)
-        
         payload = {
             "name": "",
             "type": "Folder",
             "attributes": {
                 "created_by": request.user.id,
-                "team": 13,
+                "team": resource['attributes']['team'],
                 "parent_resource": resource['attributes']['parent_resource']
             },
             "uris": [],
             "scopes": ["no_access", "default", "part_access", "full_access"]
         }
-        
+        print(payload)
         
         parent_resource_id = request.data.get('parent_resource')
 
@@ -324,12 +375,9 @@ class FolderPermissions(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
-    def post(self,request,id):
-        print(request.data.get('permissions'))
-        
+    def post(self,request,id):       
         try:
             for perm in request.data.get('permissions'):
-                
                 access_token = keycloak_connection.token['access_token']
 
                 url = f"{KEYCLOAK_ADMIN['URL']}/admin/realms/Realm-dev/clients/{KEYCLOAK_ADMIN['CLIENT_ID_KEY']}/authz/resource-server/policy/{perm['permission_id']}"

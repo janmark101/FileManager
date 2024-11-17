@@ -16,7 +16,7 @@ export class JoinTeamComponent implements OnInit{
   ngOnInit(){
     this.teamService.joinTeam(this.route.snapshot.params['code']).pipe(take(1)).subscribe((data:any)=>{
 
-    this.toast.success(data.reponse)
+    this.toast.success(data.response)
     this.router.navigate(['/'])
       
     },(error => {

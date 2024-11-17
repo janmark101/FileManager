@@ -5,11 +5,11 @@
     <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%;">
 
         <div>
-          <i class="fa-solid fa-chevron-left ml-7 mt-3" [routerLink]="['/teams',team.id]" style="font-size: 1.6rem; cursor: pointer;"></i>
+          <i class="fa-solid fa-chevron-left ml-7 mt-3" [routerLink]="['/teams',teamDescription!.id]" style="font-size: 1.6rem; cursor: pointer;"></i>
         </div>
       
         <div styles="position: absolute; left: 50%; transform: translateX(-50%);" >
-          <h1 class="name   text-center" style="font-size: 2.5rem;">{{team.name}}</h1>
+          <h1 class="name   text-center" style="font-size: 2.5rem;">{{teamDescription!.name}}</h1>
         </div>
       
         <div class="mr-24" >
@@ -21,7 +21,6 @@
       
       <hr >
         <div class="container">
-            
             <div class="buttons-box">
                 <div class="buttonCode" (click)="generateLink()">
                     <i class="fa-solid fa-paperclip icon"  style="color:rgb(0, 0, 0);font-size: 10vh;"></i>
@@ -34,12 +33,12 @@
             </div>
             <div class="team-info"> 
                 <div class="scroll">           
-                    <div class="employee_list_container" *ngFor="let user of team.users; let i = index">
-                        <div class="employee_list"> 
-                            <label class="label" for="employee{{i+1}}">{{user.email }} {{user.last_name}}</label>
-                        </div>
-                        <div>
-                            <i class="fa-solid fa-user-xmark deleteIcon" style="color:black" > </i>
+                    <div class="employee_list_container" *ngFor="let user of teamDescription!.users; let i = index">
+                        <div class="employee_list">
+                            <label class="label" for="employee{{i+1}}">
+                                <span class="name">{{user.first_name}} {{user.last_name}}</span>
+                            </label>
+                            <i class="fa-solid fa-user-xmark deleteIcon" style="color:black;" (click)="deleteUser(user)"></i>
                         </div>
                     </div>
                 </div>

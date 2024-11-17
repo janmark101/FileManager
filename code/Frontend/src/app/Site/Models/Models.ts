@@ -3,8 +3,7 @@ export interface User{
     "username" : string,
     "first_name" : string,
     "last_name" : string,
-    "email" : string,
-    "token" : string
+    "email" : string
   }
 
 export interface Team {
@@ -12,7 +11,7 @@ export interface Team {
     "name" : string,
     "users" : User[],
     "created_at" : Date,
-    "team_owner" : number,
+    "team_owner" : User,
     "adding_link_code" : string
   }
 
@@ -46,7 +45,8 @@ export interface Response{
     resources : Resource[],
     files : File_[],
     resource_names : string[]
-    resource_ids : string[]
+    resource_ids : string[],
+    user : number;
   }
 
 
