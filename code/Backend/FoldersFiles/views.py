@@ -78,7 +78,7 @@ class ResourceForTeamView(APIView):
         
         team_serializer = TeamSerialzer(team,many=False)
 
-        return Response({"team" :team_serializer.data,"folders" : fixed_resources},status=status.HTTP_200_OK)
+        return Response({"team" :team_serializer.data,"resources" : fixed_resources},status=status.HTTP_200_OK)
     
     def post(self,request,id):
         team = get_object_or_404(Team, id=id)
@@ -197,7 +197,7 @@ class SubResourcesView(APIView):
         resource_names, resource_ids = get_resource_parent_resources(resources=resources,
                                                                       resource_id=fid)
         
-        return Response({"folders" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1] },status=status.HTTP_200_OK)       
+        return Response({"resources" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1] },status=status.HTTP_200_OK)       
         
 
 class CheckFolderPermissionView(APIView):
@@ -218,7 +218,7 @@ class CheckFolderPermissionView(APIView):
         if find_permission:
             return Response(status=status.HTTP_200_OK)
                 
-        return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_401_UNAUTHORIZED)   
+        return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN)   
 
 
 class FileObjectView(APIView):
@@ -319,7 +319,7 @@ class FolderPermissions(APIView):
                 user_data = UserPermissionSerializer(user,many=False)
                 permission['user'] = user_data.data
                 
-            return Response({"permissions" : permissions_}, status=status.HTTP_200_OK)
+            return Response(permissions_, status=status.HTTP_200_OK)
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         

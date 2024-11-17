@@ -44,10 +44,9 @@ export class HomePageComponent implements OnInit {
   FetchTeams(){
     this.TeamsService.getTeams().pipe(take(1)).subscribe((response:Team[])=>{
       this.Teams = response;
-      console.log(this.Teams);
       
     }, (error) =>{
-      console.error(error)
+
     });
     }
 
@@ -65,10 +64,8 @@ export class HomePageComponent implements OnInit {
     let team_name = form.value['team-name']
 
     this.TeamsService.addTeam(team_name).pipe(take(1)).subscribe((data:unknown) => {
-      console.log(data);
       this.ngOnInit();
     },(error:Error)=>{
-      console.log(error);
       
     })
   }

@@ -261,7 +261,6 @@ background-color: #fff;
 padding: 20px;
 border-radius: 8px;
 width: 25rem;
-height: 19.4rem;
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 position: relative;
 display: flex;
@@ -277,4 +276,63 @@ select {
   border-radius: 4px;
   border: 1px solid #ccc;
   width: 200px; /* Szerokość dropdownu */
+}
+
+
+
+
+.permission-box-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 20px;
+  height: 75%;
+}
+
+.permission-box {
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  text-align: center;
+  align-items: center;
+}
+
+.permission-box h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.permission-box p {
+  margin: 5px 0;
+  font-size: 1rem;
+}
+
+/* Specific box colors */
+.noaccessbox {
+  background-color: #f8d7da;
+}
+
+.defaultbox {
+  background-color: #d1ecf1;
+}
+
+.partaccessbox {
+  background-color: #fff3cd;
+}
+
+.fullaccessbox {
+  background-color: #d4edda;
+}
+
+.draggable-user {
+  cursor: grab;
+}
+
+/* Cursor when the user is being dragged */
+.draggable-user.dragging {
+  cursor: grabbing;
 }

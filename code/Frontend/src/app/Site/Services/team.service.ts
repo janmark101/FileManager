@@ -15,8 +15,6 @@ export class TeamService {
 
 
   getTeams(){
-    // let headers = this.Auth.setHeaders();
-
     return this.http.get<Team[]>(this.baseURL, )
     .pipe(catchError(error =>{
       console.log("Error fetching teams:", error);
@@ -25,8 +23,6 @@ export class TeamService {
   }
 
   addTeam(team_name : string){
-    // let headers = this.Auth.setHeaders()
-    let user = this.Auth.getUser()
 
     let data = {
       "name" : team_name,
@@ -40,7 +36,6 @@ export class TeamService {
   }
 
   getTeam(team_id:number){
-    // let headers = this.Auth.setHeaders();
 
     return this.http.get<Team>(`${this.baseURL}${team_id}/`, {})
     .pipe(catchError(error =>{
@@ -50,7 +45,6 @@ export class TeamService {
   }
 
   deleteTeam(team_id:number){
-    // let headers = this.Auth.setHeaders();
 
     return this.http.delete(`${this.baseURL}${team_id}/`, {})
     .pipe(catchError(error =>{

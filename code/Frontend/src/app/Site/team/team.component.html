@@ -6,10 +6,10 @@
   </div>
 
   <div styles="position: absolute; left: 50%; transform: translateX(-50%);" >
-    <h1 class="name   text-center">{{accTeam.name}}</h1>
+    <h1 class="name   text-center">{{TeamDescription.name}}</h1>
   </div>
 
-  <div class="mr-12" [routerLink] ="['/teams',team_id,'settings']">
+  <div class="mr-12" [routerLink] ="['/teams',TeamDescription.id,'settings']">
     <a  style="cursor: pointer;">
       <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings" />
     </a>
@@ -27,8 +27,8 @@
     <i class="fa-solid fa-plus " style="font-size: 1.5rem;"></i>
     <a class="ml-2">New </a>
     <div class="dropdown mr-28 mt-10"   >
-      <div class="dropdown-content" style="font-size: 1rem; text-align: center;" [ngClass]="{'show': isDropdownAddOpen}" *ngIf="isDropdownAddOpen">
-        <a (click)="addFolder()">New Folder</a>
+      <div class="dropdown-content" style="font-size: 1rem; text-align: center;" [ngClass]="{'show': isDropDownOpen['add']}" *ngIf="isDropDownOpen['add']">
+        <a (click)="addResource()">New Folder</a>
       </div>
     </div>
   </div>
@@ -37,27 +37,27 @@
 
 
 <div class="folders-container">
-  <div *ngFor="let folder of Folders; let i = index" class="folder" 
-       (dragover)="onDragOver($event)" (drop)="onDrop($event, folder)" 
-       (dragstart)="onDragStart($event, folder)" draggable="true">
+  <div *ngFor="let resource of Resources; let i = index" class="folder" 
+       (dragover)="onDragResourceOver($event)" (drop)="onDropResource($event, resource)" 
+       (dragstart)="onDragResourceStart($event, resource)" draggable="true">
     
     <!-- Ikona folderu -->
      <div class="ikonname">
-      <a (click)="navigateToSubfolder(folder.id)" class="folder-icon">
+      <a (click)="navigateToSubResources(resource.id)" class="folder-icon">
         <img src="assets/WebImages/icons/folder.png" alt="Folder Icon" class="logo" />
       </a>
   
       <!-- Nazwa folderu -->
-      <a class="folder-name">{{ folder.name }}</a>
+      <a class="folder-name">{{ resource.name }}</a>
      </div>
 
     <!-- Dropdown menu -->
-    <div class="dropdown" (click)="toggleDropdownFolder(i)">
+    <div class="dropdown" (click)="toggleDropdownResource(i)">
       <i class="fa-solid fa-ellipsis-vertical dropdown-icon" style="font-size: 1.5rem;"></i>
-      <div class="dropdown-content" [ngClass]="{'show': isDropdownFolderOpen[i]}" *ngIf="isDropdownFolderOpen[i]">
-        <a (click)="RenameFolder(folder)">Rename</a>
-        <a (click)="DeleteFolder(folder.id)">Delete</a>
-        <a (click)="ManagePermissions(folder.id)">Permissions</a>
+      <div class="dropdown-content" [ngClass]="{'show': isDropDownOpen['resource'][i]}" *ngIf="isDropDownOpen['resource'][i]">
+        <a (click)="renameResource(resource)">Rename</a>
+        <a (click)="deleteResource(resource.id)">Delete</a>
+        <a (click)="managePermissions(resource)">Permissions</a>
       </div>
     </div>
   </div>
@@ -66,12 +66,12 @@
 
 
 
-<div class="modal" *ngIf="isRenameOpen">
+<div class="modal" *ngIf="isModalOpen['isRename']">
   <div class="SizeModalContent" style="height: 14rem;">
       <span class="close" (click)="closePanel()">&times;</span>
       <p class="text-2xl font-bold ">Change name</p>
-      <form (ngSubmit)="onRenameFileFolder(rename,selected_file_folder.name,selected_file_folder.id)" class="formContainer mt-4"  #rename="ngForm">
-        <input class="input" type="text" id="edit-name" [ngModel]="selected_file_folder.name" name="edit-name"
+      <form (ngSubmit)="onRenameResource(rename,selectedResource.id)" class="formContainer mt-4"  #rename="ngForm">
+        <input class="input" type="text" id="edit-name" [ngModel]="selectedResource.name" name="edit-name"
             required />
           <div class="buttonContainer mt-1">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
@@ -83,50 +83,50 @@
 
 
 
-<div class="modal" *ngIf="isAddFolderOpen">
-  <div class="SizeModalContent" style="  height: 19.4rem;">
+<div class="modal" *ngIf="isModalOpen['isAddResource']">
+  <div class="SizeModalContent" style="height: 19.4rem;">
       <span class="close" (click)="closePanel()">&times;</span>
         <p class="text-2xl font-bold ">New folder</p>
-        <form (ngSubmit)="onAddFolder(addFolder)" class="formContainer mt-4"  #addFolder="ngForm">
+        <form (ngSubmit)="onAddResource(addResource)" class="formContainer mt-4"  #addResource="ngForm">
           <input class="input" type="text" id="folder-name" placeholder="Folder name" name="folder-name" ngModel
             required />
             <div style="display: flex; align-items: center; gap: 10px; justify-content: space-between;margin-top:1.5rem;">
               <p >Choose permission:</p>
-              <select id="options" name="selectedOption" [(ngModel)]="selectedPermission" (change)="onPermissionChange($event)">
-                <option *ngFor="let permission of permissions" [value]="permission">{{ permission }}</option>
+              <select id="options" name="selectedOption" [(ngModel)]="permissionsData['selectedPermission']" (change)="onPermissionChange($event)">
+                <option *ngFor="let permission of permissionsData['permissions']" [value]="permission">{{ permission }}</option>
               </select>
             </div>
             <p style="display:flex; font-size: 10px; justify-content: center; margin-top: 0.7rem;">This will set default permission for all users in team</p>
           <div class="buttonContainer mt-4">
             <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
-              <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
           </div>
       </form>
   </div>
 </div>
 
 
-<div class="modal" *ngIf="isMenagePermissionOpen">
+<div class="modal" *ngIf="isModalOpen['isManagePermission']">
   <div class="SizeModalContent" style="height: 40rem; width: 65rem;">
       <span class="close" (click)="closePanel()">&times;</span>
         <p class="text-2xl font-bold ">Permissions</p>
         <form (ngSubmit)="onManagePermissions()" class="formContainer mt-4"  #addFolder="ngForm" style="height: 100%;display: flex; flex-direction: column; justify-content: space-between;">
 
           <div class="permission-box-container">
-            <ng-container *ngFor="let permission of permissions; let i = index">
+            <ng-container *ngFor="let permission of permissionsData['permissions']; let i = index">
               <div style="flex: 1; text-align: center;">
                 <h3>{{ permission }}</h3>
                 <div
                   class="permission-box"
                   [ngClass]="permission.toLowerCase() + 'Box'"
-                  (dragover)="allowDrop($event)"
-                  (drop)="drop($event, permission)"
+                  (dragover)="allowDropUser($event)"
+                  (drop)="dropUser($event, permission)"
                 >
                   <ng-container *ngFor="let perm of getPermissionsForBox(permission)">
                     <div
                       class="draggable-user"
                       draggable="true"
-                      (dragstart)="drag($event, perm)"
+                      (dragstart)="dragUser($event, perm)"
                       style="width: 100%; display: flex; flex-direction: column; align-items: start; overflow-y: hidden;"
                     >
                       <p>{{ perm.user.first_name }} {{ perm.user.last_name }}</p>

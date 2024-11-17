@@ -1,17 +1,16 @@
-import { Component, HostListener, OnInit, Type } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { SiteService } from '../Services/site.service';
 import { take } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
-import { Folder, Team } from '../Models/Models';
+import { createDefaultDropDownState, createDefaultModalState, createDefaultPermissionsData, DropDownState, ModalState, PermissionsDataState, Resource, ResourcePermissions, Team } from '../Models/Models';
 import {
   ConfirmBoxEvokeService,
   
 } from '@costlydeveloper/ngx-awesome-popup';
 import { NgForm } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { LoginComponent } from '../login/login.component';
+
 
 
 
@@ -22,13 +21,15 @@ import { LoginComponent } from '../login/login.component';
 })
 export class TeamComponent implements OnInit{
 
-  Folders : Folder[] = []
-  accTeam : Team = {
-    id : 0,
-    name : "0",
+  Resources : Resource[] = []
+
+  TeamDescription : Team = {
+    id : -1,
+    name : "",
     "users" : [],
     created_at :  new Date(),
-    user : 0
+    team_owner : -1,
+    adding_link_code : ""
   }
 
   path = [];
@@ -36,32 +37,26 @@ export class TeamComponent implements OnInit{
   backIcon = faChevronLeft;
   currentPath: string[] = [];
 
-  isAddFolderOpen : boolean = false;
-  
-  draggedFileFolder: any;
-  isRenameOpen = false;
-  selected_file_folder : Folder | any
+  isModalOpen : ModalState = createDefaultModalState();
+  isDropDownOpen : DropDownState = createDefaultDropDownState();
 
-  isDropdownFolderOpen: boolean[] = [];
-  isDropdownAddOpen : boolean = false;
-  team_id : number = -1
 
-  selectedPermission : string = "Default"
-  permissions :string[] = ["No Access", "Default", "Part Access" , "Full Access"]
 
-  isMenagePermissionOpen : boolean = false
+  draggedResource: Resource  | null = null;
 
-  ResourcePermissions : any[] =  []
-  ChangedResourcePermissions : any[] = []
+  selectedResource : Resource = {
+    name : "",
+    id : ""
+  }
+
+  permissionsData : PermissionsDataState = createDefaultPermissionsData();
+
 
   constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params=>{
-      this.team_id = Number(params.get('id'))
-      
-      if (this.team_id)
-        this.fetchFolders(this.team_id);
+    this.route.paramMap.subscribe(params=>{     
+      this.fetchResourcesAndTeam(Number(params.get('id')));
     })
 
     this.route.params.subscribe(params => {
@@ -74,24 +69,21 @@ export class TeamComponent implements OnInit{
     return [initialId]; 
   }
 
-  fetchFolders(id:number){
-    this.SiteService.getFolders(id).pipe(take(1)).subscribe((data:any) =>{
-      this.Folders = data.folders;
-      this.accTeam = data.team;
+  fetchResourcesAndTeam(teamID:number){
+    this.SiteService.getResources(teamID).pipe(take(1)).subscribe((data:any) =>{
+      this.Resources = data.resources;
+      this.TeamDescription = data.team;
+      
     },(error:any) =>{
-      console.error(error);
       
     })
   }
 
-  navigateToSubfolder(folderId: number): void {    
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
-      console.log(data);
-           
-      this.currentPath.push(folderId.toString());
+  navigateToSubResources(resourceID: string): void {    
+    this.SiteService.checkResourcePermission(this.TeamDescription.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{            
+      this.currentPath.push(resourceID.toString());
       this.router.navigate([`/teams`, ...this.currentPath]);
     }),error=>{   
-
       if (error.status == 401){
         this.toast.error(error.error.Error)
       }
@@ -100,31 +92,39 @@ export class TeamComponent implements OnInit{
   }
 
 
-  onDragStart(event: DragEvent, obj: Folder) {
-    this.draggedFileFolder = obj;
-    event.dataTransfer?.setData('text/plain', obj.name);
+  closePanel(){
+    this.isModalOpen = createDefaultModalState();
   }
 
-  onDragOver(event: DragEvent) {
+
+  onDragResourceStart(event: DragEvent, resource: Resource) {
+    this.draggedResource = resource;    
+    event.dataTransfer?.setData('text/plain', resource.name);
+  }
+
+
+  onDragResourceOver(event: DragEvent) {
     event.preventDefault(); 
   }
 
-  onDrop(event: DragEvent, folder: Folder | any) {
-    event.preventDefault(); 
 
-    if (this.draggedFileFolder.id != folder.id)
-      this.move_folder(folder.id)
+  onDropResource(event: DragEvent, resource: Resource | any) {
+    event.preventDefault(); 
+    
+    if (this.draggedResource!.id != resource.id)
+      this.moveResource(resource.id)
   }
 
-  move_folder(folderId:number){
-    if (this.draggedFileFolder) {
-      this.SiteService.checkFolderPermission(this.accTeam.id,this.draggedFileFolder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
-        this.SiteService.moveFolder(folderId,this.draggedFileFolder.id).pipe(take(1)).subscribe((data:unknown)=>{
+
+  moveResource(resourceID:string){
+    if (this.draggedResource) {
+      this.SiteService.checkResourcePermission(this.TeamDescription.id,this.draggedResource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+        this.SiteService.moveResource(resourceID,this.draggedResource!.id).pipe(take(1)).subscribe((data:unknown)=>{
           this.ngOnInit();
-          this.draggedFileFolder = null;   
+          this.draggedResource = null;   
         },(error)=>{
           console.error(error);
-          this.draggedFileFolder = null;
+          this.draggedResource = null;
         })
       }),error=>{   
         this.toast.error(error.error.Error)
@@ -135,29 +135,41 @@ export class TeamComponent implements OnInit{
 
 
 
-  RenameFolder(folder:Folder){
-    this.SiteService.checkFolderPermission(this.accTeam.id,folder.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+  renameResource(resource:Resource){
+    this.SiteService.checkResourcePermission(this.TeamDescription.id,resource.id,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.closeAllDropdowns();
-      this.selected_file_folder = folder
-      this.isRenameOpen = true
+      this.selectedResource = resource
+      this.isModalOpen['isRename'] = true;
     }),error=>{   
         this.toast.error(error.error.Error)
       }
     )
   }
 
-  DeleteFolder(folderId:number){
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+
+  onRenameResource(form :NgForm, resourceID:string){
+    this.closeAllDropdowns();
+    
+      this.SiteService.renameResource(form.value['edit-name'],resourceID).pipe(take(1)).subscribe((data) =>{
+        this.selectedResource.name = form.value['edit-name']
+        this.closePanel();
+      },(error) =>{
+        this.toast.error('Something went wrong!');
+        
+      })
+  }
+
+
+  deleteResource(resourceID:string){
+    this.SiteService.checkResourcePermission(this.TeamDescription.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.closeAllDropdowns();
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
       .subscribe(resp => {
         if (resp.success===true) {
-          this.SiteService.deleteFolder(folderId).pipe(take(1)).subscribe((data:unknown) =>{
+          this.SiteService.deleteResource(resourceID).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
             this.toast.success('Folder deleted!')
-          },(error) =>{
-            console.error(error);
-            
+          },(error) =>{            
           })          
         }
       });
@@ -167,86 +179,15 @@ export class TeamComponent implements OnInit{
     )
   }
 
-  closePanel(){
-    this.isRenameOpen = false;
-    this.isAddFolderOpen = false;
-    this.isMenagePermissionOpen = false;
-  }
 
-  onRenameFileFolder(form :NgForm, file_name : string,fileId:number){
-    this.closeAllDropdowns();
-    
-      this.SiteService.renameFolder(form.value['edit-name'],fileId).pipe(take(1)).subscribe((data:unknown) =>{
-        this.selected_file_folder.name = form.value['edit-name']
-        this.closePanel();
-      },(error) =>{
-        this.toast.error('Something went wrong!');
-        
-      })
-  }
-
-
-
-toggleDropdownFolder(index: number) {
-  this.closeAllDropdowns()
-  this.isDropdownFolderOpen[index] = !this.isDropdownFolderOpen[index];
-}
-
-toggleDropDownAdd(){
-  this.closeAllDropdowns()
-  this.isDropdownAddOpen = !this.isDropdownAddOpen;
-  console.log(this.isDropdownAddOpen);
-  
-}
-
-closeAllDropdowns() {
-  this.isDropdownFolderOpen = [];
-  this.isDropdownAddOpen = false;
-}
-
-@HostListener('document:click', ['$event'])
-closeDropdownOnClickOutside(event: MouseEvent) {
-  if (!(event.target as HTMLElement).closest('.dropdown') && !(event.target as HTMLElement).closest('.new')) {
-    this.closeAllDropdowns();
-  }
-}
-
-
-
-addFolder(){
-  this.closeAllDropdowns();
-  this.selectedPermission = "Default";
-  this.isAddFolderOpen = true
-}
-
-onAddFolder(form :NgForm){
-  
-  this.SiteService.addFolder(form.value['folder-name'],'None',this.team_id,this.selectedPermission).pipe(take(1)).subscribe((data:unknown) =>{
-    this.ngOnInit();
-    this.closePanel();
-    this.toast.success('Folder created!')
-  },(error) =>{
-    this.toast.error(error.error.error);
-    
-    
-  })
-}
-
-
-onPermissionChange(event: Event) {
-  const selectedValue = (event.target as HTMLSelectElement).value;
-  this.selectedPermission = selectedValue
-  }
-
-
-  ManagePermissions(folderId:any){
-    this.SiteService.checkFolderPermission(this.accTeam.id,folderId,['Full Access']).pipe(take(1)).subscribe((data=>{ 
-      this.SiteService.getPermissions(folderId).pipe(take(1)).subscribe((data:any)=>{
+  managePermissions(resource : Resource){
+    this.SiteService.checkResourcePermission(this.TeamDescription.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.SiteService.getPermissions(resource.id).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
-        this.isMenagePermissionOpen = true
-        this.selected_file_folder = folderId
-        this.ChangedResourcePermissions = []
-        this.ResourcePermissions = data.permissions
+        this.isModalOpen['isManagePermission'] = true;
+        this.selectedResource = resource
+        this.permissionsData['ChangedResourcePermissions'] = []
+        this.permissionsData['ResourcePermissions'] = data        
       },(error)=>{
         this.toast.error('Something went wrong!')
       })
@@ -259,8 +200,8 @@ onPermissionChange(event: Event) {
 
 
   onManagePermissions(){
-    if (this.ChangedResourcePermissions.length >=1){
-      this.SiteService.changeResourcePermissions(this.selected_file_folder, this.ChangedResourcePermissions).pipe(take(1)).subscribe((data =>{
+    if (this.permissionsData['ChangedResourcePermissions'].length >=1){
+      this.SiteService.changeResourcePermissions(this.selectedResource.id, this.permissionsData['ChangedResourcePermissions']).pipe(take(1)).subscribe((data =>{
         this.closePanel()
         this.toast.success('Permissions changed!')
       }),error=>{
@@ -273,21 +214,74 @@ onPermissionChange(event: Event) {
   }
 
 
-
-  getPermissionsForBox(permission: string) {
-    return this.ResourcePermissions.filter(perm => perm.permission === permission);
+  toggleDropdownResource(index: number) {
+    this.closeAllDropdowns()
+    this.isDropDownOpen['resource'][index] = !this.isDropDownOpen['resource'][index];
   }
 
 
-  drag(event: DragEvent, perm: any) {
+  toggleDropDownAdd(){
+    this.closeAllDropdowns()
+    this.isDropDownOpen['add'] = !this.isDropDownOpen['add'];
+    
+  }
+
+
+  closeAllDropdowns() {
+    this.isDropDownOpen['resource'] = []
+    this.isDropDownOpen['add'] = false;
+  }
+
+
+  @HostListener('document:click', ['$event'])
+  closeDropdownOnClickOutside(event: MouseEvent) {
+    if (!(event.target as HTMLElement).closest('.dropdown') && !(event.target as HTMLElement).closest('.new')) {
+      this.closeAllDropdowns();
+    }
+  }
+
+
+
+  addResource(){
+    this.closeAllDropdowns();
+    this.permissionsData['selectedPermission'] = "Default";
+    this.isModalOpen['isAddResource'] = true;
+  }
+
+
+  onPermissionChange(event: Event) {
+    const selectedValue = (event.target as HTMLSelectElement).value;
+    this.permissionsData['selectedPermission'] = selectedValue
+  }
+
+
+  onAddResource(form :NgForm){
+    this.SiteService.addResource(form.value['folder-name'],'None',this.TeamDescription.id,this.permissionsData['selectedPermission']).pipe(take(1)).subscribe((data:unknown) =>{
+      this.ngOnInit();
+      this.closePanel();
+      this.toast.success('Folder created!')
+    },(error) =>{
+      this.toast.error(error.error.error);
+    })
+  }
+
+
+  getPermissionsForBox(permission: string) {
+    return this.permissionsData['ResourcePermissions'].filter(perm => perm.permission === permission);
+  }
+
+
+  dragUser(event: DragEvent, perm: any) {
     event.dataTransfer?.setData('text/plain', JSON.stringify(perm));
   }
 
-  allowDrop(event: DragEvent) {
+
+  allowDropUser(event: DragEvent) {
     event.preventDefault(); 
   }
 
-  drop(event: DragEvent, permission: string) {
+
+  dropUser(event: DragEvent, permission: string) {
     event.preventDefault();
     const data = event.dataTransfer?.getData('text/plain');
 
@@ -299,18 +293,14 @@ onPermissionChange(event: Event) {
 
 
   updateUserPermission(perm: any, permission : string) {
-    
-    const index = this.ResourcePermissions.findIndex(item => item.user.id === perm.user.id)
+    const index = this.permissionsData['ResourcePermissions'].findIndex(item => item.user.id === perm.user.id)
 
     if (index != -1) {      
-      if (this.ResourcePermissions[index].permission == permission)
+      if (this.permissionsData['ResourcePermissions'][index].permission == permission)
         return
-      this.ResourcePermissions[index].permission = permission
-      this.ChangedResourcePermissions.push(this.ResourcePermissions[index])
+      this.permissionsData['ResourcePermissions'][index].permission = permission
+      this.permissionsData['ChangedResourcePermissions'].push(this.permissionsData['ResourcePermissions'][index])
     }
-
-    
-    
   }
 
 }

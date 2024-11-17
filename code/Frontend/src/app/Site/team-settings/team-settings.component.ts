@@ -24,7 +24,8 @@ export class TeamSettingsComponent implements OnInit{
     "name" : '',
     "users" : [],
     "created_at" : new Date(),
-    "user" : -1
+    team_owner : -1,
+    adding_link_code : ""
   }
 
   team_id : number = -1

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthServiceService } from './auth-service.service';
 import { catchError, Subject, throwError } from 'rxjs';
-import { Response, Folder } from '../Models/Models';
+import { Response, Resource, ResourcePermissions } from '../Models/Models';
 
 
 
@@ -21,164 +21,127 @@ export class SiteService {
     this.callNgOnInitSubject.next();
   }
 
-  getFolders(id:number){
-
-
-    return this.http.get<Folder[]>(`${this.baseURL}teams/${id}/`)
+  getResources(id:number){
+    return this.http.get<Resource[]>(`${this.baseURL}teams/${id}/`)
     .pipe(catchError(error =>{
-      console.log("Error fetching folders: ",error);
       return throwError(error)
     }))
   }
 
-  getSubFoldersFiles(tid:number,fid:unknown){
-
+  getSubResourcesFiles(tid:number,fid:unknown){
     return this.http.get<Response>(`${this.baseURL}teams/${tid}/${fid}/`)
     .pipe(catchError(error =>{
-      console.log("Error fetching folders: ",error);
       return throwError(error)
     }))
   }
 
-  renameFile(newFileName:string,fileId:number){
-  
-
+  renameFile(newFileName:string, fileID : number | string){
     let data = {
       'name' : newFileName
     }
 
-    return this.http.patch(`${this.baseURL}file/${fileId}/`,data,)
+    return this.http.patch(`${this.baseURL}file/${fileID}/`,data,)
     .pipe(catchError(error =>{
-      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
-  renameFolder(newFileName:string,fileId:number){
-    let headers = this.Auth.setHeaders()
-
+  renameResource(newFileName:string,fileId:string){
     let data = {
       'name' : newFileName
     }
 
-    return this.http.patch(`${this.baseURL}folder/${fileId}/`,data,{headers})
+    return this.http.patch(`${this.baseURL}resource/${fileId}/`,data)
     .pipe(catchError(error =>{
-      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
   deleteFile(fileId:number){
-    let headers = this.Auth.setHeaders()
-
-    return this.http.delete(`${this.baseURL}file/${fileId}/`,{headers})
+    return this.http.delete(`${this.baseURL}file/${fileId}/`)
     .pipe(catchError(error =>{
-      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
-  deleteFolder(folderId:number){
-    let headers = this.Auth.setHeaders()
-
-    return this.http.delete(`${this.baseURL}folder/${folderId}/`,{headers})
+  deleteResource(resourceID:string){
+    return this.http.delete(`${this.baseURL}resource/${resourceID}/`)
     .pipe(catchError(error =>{
-      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
   moveFile(folderId:number | string,fileId:number){
-    let headers = this.Auth.setHeaders() 
-
     let data = {
       'folder' : folderId
     }
 
-    return this.http.patch(`${this.baseURL}file/${fileId}/`,data,{headers})
+    return this.http.patch(`${this.baseURL}file/${fileId}/`,data)
     .pipe(catchError(error =>{
-      console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
-  moveFolder(parentFolderId:number | string,folderId:number){
-    let headers = this.Auth.setHeaders() 
-
+  moveResource(parentResourceID : string,resourceID : string){
     let data = {
-      'parent_resource' : parentFolderId
+      'parent_resource' : parentResourceID
     }
 
-    return this.http.patch(`${this.baseURL}folder/${folderId}/`,data,{headers})
+    return this.http.patch(`${this.baseURL}resource/${resourceID}/`,data)
     .pipe(catchError(error =>{
       console.log("Error patching file name: ",error);
       return throwError(error)
     }))
-
   }
 
 
   
-  addFolder(folder_name:string, parent_folder_id : string | unknown, team_id :number,scope:string){
-    
+  addResource(resourceName : string, parentResourceID : string | unknown, teamID :number,scope:string){
     let data = {
-      'team' : team_id,
-      'parent_resource' : parent_folder_id,
+      'team' : teamID,
+      'parent_resource' : parentResourceID,
       'scope' : scope,
-      'name' : folder_name
+      'name' : resourceName
     }
 
-    return this.http.post(`${this.baseURL}teams/${team_id}/`,data)
-
+    return this.http.post(`${this.baseURL}teams/${teamID}/`,data)
   }
 
 
-  addFile(file:FormData, folder_id : string | unknown){
-    let headers = this.Auth.setHeaders()
-  
-    return this.http.post(`${this.baseURL}folder/${folder_id}/addfile/`,file, {headers})
+  addFile(file:FormData, resourceID : string){  
+    return this.http.post(`${this.baseURL}resource/${resourceID}/addfile/`,file)
     .pipe(catchError(error =>{
-      console.log("Error fetching folders: ",error);
       return throwError(error)
     }))
-
   }
 
 
-  checkFolderPermission(tid:number,fid:number|any,scopes:unknown){
+  checkResourcePermission(teamID : number, resourceID : string, scopes : unknown){
     let data = {
       "scopes" : scopes
     }
-    return this.http.post(`${this.baseURL}folder/${tid}/${fid}/permission`,data)
+
+    return this.http.post(`${this.baseURL}resource/${teamID}/${resourceID}/permission`,data)
     .pipe(catchError(error =>{
-      console.log("Error: ",error);
       return throwError(error)
     }))
   }
 
 
-  getPermissions(resourceId : string){
-    return this.http.get(`${this.baseURL}resource/${resourceId}/permissions`)
+  getPermissions(resourceID : string){
+    return this.http.get<ResourcePermissions>(`${this.baseURL}resource/${resourceID}/permissions`)
     .pipe(catchError(error =>{
-      console.log("Error: ",error);
       return throwError(error)
     }))
   }
 
-  changeResourcePermissions(resourceId : string, permissions : any[]){
-
+  changeResourcePermissions(resourceID : string, permissions : any[]){
     let data = {
       "permissions" : permissions
     }
 
-    return this.http.post(`${this.baseURL}resource/${resourceId}/permissions`, data)
+    return this.http.post(`${this.baseURL}resource/${resourceID}/permissions`, data)
     .pipe(catchError(error =>{
-      console.log("Error: ",error);
       return throwError(error)
     }))
   }
