@@ -15,10 +15,10 @@
       <img src="assets/WebImages/icons/leave_team.png" alt="Logo" class="settings"  *ngIf="TeamDescription.team_owner.id != userInfo"  (click)="leaveTeam()"/>
     </a>
   </div>
-
+ 
 </div>
 
-<hr >
+<hr class="divider" />
 
 <div class="path ml-5 gap-1">
   <div *ngFor="let _ of path;let i =index" class="path ">

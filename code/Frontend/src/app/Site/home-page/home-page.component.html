@@ -1,14 +1,16 @@
 <div class ="songs-box ">
     <div class="playlist-grid" >
+      <button class="add-team-btn" (click)="openAddTeamPanel()">ADD Team</button>
         <div class="team-card" *ngFor="let team of Teams" [routerLink]="['/teams',team.id]">
             <h2>{{ team.name }}</h2>
-            <p>awdjiwa dnawiuod nawduaiwdn aiu d</p>
+            <p *ngIf="team.description !=''">{{team.description}}</p>
+            <p *ngIf="team.description ==''">...</p>
           </div>
     </div>
 </div>
 
 
-<button style="border: 1px solid black;" (click)="openAddTeamPanel()">Add team</button>
+<!-- <button style="border: 1px solid black;" (click)="openAddTeamPanel()">Add team</button> -->
 
 
 
@@ -20,6 +22,8 @@
           <form (ngSubmit)="onAddTeam(addTeam)" class="formContainer mt-4"  #addTeam="ngForm">
             <input class="input" type="text" id="team-name" placeholder="Team name" name="team-name" ngModel
               required />
+            <textarea class="input" type="text" id="team-description" placeholder="Team description" name="team-description" ngModel
+              required  rows="4" cols="50" style="resize: none;"></textarea>
             <div class="buttonContainer mt-2">
               <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
                 <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
@@ -27,3 +31,6 @@
         </form>
     </div>
   </div>
+
+
+ 

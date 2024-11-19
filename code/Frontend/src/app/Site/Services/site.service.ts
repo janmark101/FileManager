@@ -128,19 +128,19 @@ export class SiteService {
   }
 
 
-  getPermissions(resourceID : string){
-    return this.http.get<ResourcePermissions>(`${this.baseURL}resource/${resourceID}/permissions`)
+  getPermissions(teamID : number, resourceID : string){
+    return this.http.get<ResourcePermissions>(`${this.baseURL}resource/${teamID}/${resourceID}/permissions`)
     .pipe(catchError(error =>{
       return throwError(error)
     }))
   }
 
-  changeResourcePermissions(resourceID : string, permissions : any[]){
+  changeResourcePermissions(teamID : number,resourceID : string, permissions : any[]){
     let data = {
       "permissions" : permissions
     }
 
-    return this.http.post(`${this.baseURL}resource/${resourceID}/permissions`, data)
+    return this.http.post(`${this.baseURL}resource/${teamID}/${resourceID}/permissions`, data)
     .pipe(catchError(error =>{
       return throwError(error)
     }))

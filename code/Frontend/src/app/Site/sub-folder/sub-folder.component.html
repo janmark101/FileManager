@@ -9,15 +9,16 @@
     <h1 class="name   text-center">{{teamDescription!.name}}</h1>
   </div>
 
-  <div class="mr-12" [routerLink] ="['/teams',teamDescription!.id,'settings']" >
-    <a  style="cursor: pointer;">
-      <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings"  *ngIf="teamDescription!.team_owner.id == userInfo"/>
+  <div class="mr-12" >
+    <a  style="cursor: pointer;" >
+      <img src="assets/WebImages/icons/settings.png" alt="Logo" class="settings"  *ngIf="teamDescription.team_owner.id == userInfo"  [routerLink] ="['/teams',teamDescription.id,'settings']"/>
+      <img src="assets/WebImages/icons/leave_team.png" alt="Logo" class="settings"  *ngIf="teamDescription.team_owner.id != userInfo"  (click)="leaveTeam()"/>
     </a>
   </div>
 
 </div>
   
-<hr >
+<hr class="divider" />
 
 <div class="path ml-5 gap-1">
 <div *ngFor="let _ of path;let i =index" class="path ">
@@ -149,7 +150,8 @@
                       (dragstart)="dragUser($event, perm)"
                       style="width: 100%; display: flex; flex-direction: column; align-items: start; overflow-y: hidden;"
                     >
-                      <p>{{ perm.user.first_name }} {{ perm.user.last_name }}</p>
+                      <p *ngIf="teamDescription.team_owner.id == perm.user.id"> {{ perm.user.first_name }} {{ perm.user.last_name }} (Owner)</p>
+                      <p *ngIf="teamDescription.team_owner.id != perm.user.id"> {{ perm.user.first_name }} {{ perm.user.last_name }} </p>
                     </div>
                   </ng-container>
                 </div>

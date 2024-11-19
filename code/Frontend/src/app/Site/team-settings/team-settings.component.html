@@ -1,59 +1,79 @@
 
-
-
-  <div class="body">
-    <div style="display: flex; align-items: center; justify-content: space-between; position: relative; width: 100%;">
-
-        <div>
-          <i class="fa-solid fa-chevron-left ml-7 mt-3" [routerLink]="['/teams',teamDescription!.id]" style="font-size: 1.6rem; cursor: pointer;"></i>
-        </div>
-      
-        <div styles="position: absolute; left: 50%; transform: translateX(-50%);" >
-          <h1 class="name   text-center" style="font-size: 2.5rem;">{{teamDescription!.name}}</h1>
-        </div>
-      
-        <div class="mr-24" >
+    <div class="team-page">
+    <div class="header">
+        <i 
+        class="fa-solid fa-chevron-left back-icon" 
+        [routerLink]="['/teams', teamDescription!.id]">
+        </i>
+        <h1 class="team-name">{{ teamDescription!.name }}</h1>
+        <div class="spacer"></div>
+    </div>
     
-        </div>
-      
-      </div>
+    <hr class="divider" />
     
-      
-      <hr >
-        <div class="container">
-            <div class="buttons-box">
-                <div class="buttonCode" (click)="generateLink()">
-                    <i class="fa-solid fa-paperclip icon"  style="color:rgb(0, 0, 0);font-size: 10vh;"></i>
-                    <p class="button-name">Adding Link</p>
-                </div>
-                <div class="buttonCode">
-                    <i class="fa-solid fa-trash icon"  style="color:rgb(0, 0, 0);font-size: 10vh;" (click)="deleteTeam()"></i>
-                    <p class="button-name">Delete Team</p>
-                </div>
+    <div class="content">
+        <div class="actions">
+        <div class="action-container" (click)="generateLink()">
+            <i class="fa-solid fa-paperclip action-icon"></i>
+            <p class="action-label">Adding Link</p>
+        </div>
+        <div class="action-container" (click)="manageTeam()">
+            <i class="fa-solid fa-screwdriver-wrench action-icon"></i>
+            <p class="action-label">Settings</p>
             </div>
-            <div class="team-info"> 
-                <div class="scroll">           
-                    <div class="employee_list_container" *ngFor="let user of teamDescription!.users; let i = index">
-                        <div class="employee_list">
-                            <label class="label" for="employee{{i+1}}">
-                                <span class="name">{{user.first_name}} {{user.last_name}}</span>
-                            </label>
-                            <i class="fa-solid fa-user-xmark deleteIcon" style="color:black;" (click)="deleteUser(user)"></i>
-                        </div>
-                    </div>
-                </div>
+        <div class="action-container" (click)="deleteTeam()">
+            <i class="fa-solid fa-trash action-icon"></i>
+            <p class="action-label">Delete Team</p>
+        </div>
+        </div>
+    
+        <div class="team-info">
+        <div class="user-list">
+            <div 
+            class="user-container" 
+            *ngFor="let user of teamDescription!.users; let i = index">
+            <div class="user-item">
+                <label class="user-label" for="employee{{ i + 1 }}">
+                <span class="user-name">{{ user.first_name }} {{ user.last_name }}</span>
+                </label>
+                <i 
+                class="fa-solid fa-user-xmark user-delete-icon" 
+                (click)="deleteUser(user)">
+                </i>
             </div>
+            </div>
+        </div>
         </div>
     </div>
-
-
-
+    
     <div class="modal" *ngIf="addingLinkWindow">
-        <div class="SizeModalContent">
-            <span class="close" (click)="closePanel()">&times;</span>
-            <p class="text-2xl font-bold ">Adding Link</p>
-            <p class="mt-2" style="font-size: 1.2rem;">{{addingLink}}</p>
-            <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow mt-3" (click)="closePanel()">OK</button>
-         
+        <div class="modal-content">
+        <span class="close-modal" (click)="closePanel()">&times;</span>
+        <p class="modal-title">Adding Link</p>
+        <p class="modal-description">{{ addingLink }}</p>
+        <button 
+            class="modal-button" 
+            (click)="closePanel()">
+            OK
+        </button>
         </div>
-      </div>
+    </div>
+    </div>
+    
+
+    <div class="modal" *ngIf="isManageTeamOpen">
+    <div class="SizeModalContent" style="height: 22rem;">
+        <span class="close" (click)="closePanel()">&times;</span>
+            <p class="text-2xl font-bold ">{{teamDescription.name}}</p>
+            <form (ngSubmit)="onManageTeam(addTeam)" class="formContainer mt-4"  #addTeam="ngForm">
+            <input class="input" type="text" id="team-name" placeholder="Team name" name="team-name" [ngModel]="teamDescription.name"
+                required />
+            <textarea class="input" type="text" id="team-description" placeholder="Team description" name="team-description" [ngModel]="teamDescription.description"
+                required  rows="4" cols="50" style="resize: none;"></textarea>
+            <div class="buttonContainer mt-2">
+                <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow" type="button" (click)="closePanel()">Cancel</button>
+                <button class="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow ml-5" type="submit">OK</button>
+            </div>
+        </form>
+    </div>
+    </div>

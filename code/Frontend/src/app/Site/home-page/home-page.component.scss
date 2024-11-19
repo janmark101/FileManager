@@ -16,7 +16,7 @@
     padding-bottom: 40px;
     border-radius: 15px;
     background-color: rgb(255, 255, 255);
-    box-shadow: 0px 0px 10px 5px #cac9c9;;
+    box-shadow: 0px 0px 10px 5px #cac9c9;
   }
 
 
@@ -117,10 +117,32 @@ background-color: #fff;
 padding: 20px;
 border-radius: 8px;
 width: 25rem;
-height: 13rem;
+height: 22rem;
 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 position: relative;
 display: flex;
 flex-direction: column;
 align-items: center;
 }
+
+
+
+.add-team-btn {
+  cursor: pointer;
+  background-color: #dadada;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  width: 100px;
+  padding: 20px;
+  text-align: center;
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0px 0px 5px 2px #cac9c9;
+  font-weight: bold;
+}
+
+.add-team-btn:hover {
+  transform: scale(1.05);
+
+}
+
+

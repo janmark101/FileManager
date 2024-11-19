@@ -10,5 +10,5 @@ urlpatterns = [
     path('resource/<str:id>/',views.FolderObjectView.as_view()),
     path('resource/<str:id>/addfile/',views.UploadFileView.as_view()),
     path('resource/<int:tid>/<str:fid>/permission',views.CheckFolderPermissionView.as_view()),
-    path('resource/<str:id>/permissions',views.FolderPermissions.as_view())
+    path('resource/<int:tid>/<str:id>/permissions',views.FolderPermissions.as_view())
 ]

@@ -9,6 +9,7 @@ import {
   
 } from '@costlydeveloper/ngx-awesome-popup';
 import { ToastrService } from 'ngx-toastr';
+import { TeamService } from '../Services/team.service';
 
 @Component({
   selector: 'app-sub-folder',
@@ -33,10 +34,11 @@ export class SubFolderComponent {
       last_name : '',
       username : '',
     },
-    adding_link_code : ""
+    adding_link_code : "",
+    description : ""
   }
 
-  extIcons = ['csv','docx','exe','jpg','json','mp4','pdf','png','ppt','xml','js','txt','html','mp3','zip','ppt']
+  extIcons = ['csv','docx','exe','jpg','json','mp4','pdf','png','ppt','xml','js','txt','html','mp3','zip','ppt','pptx']
 
   path : string[] = []
   path_ids : string[] = []
@@ -63,7 +65,8 @@ export class SubFolderComponent {
  
   userInfo : number = -2;
 
-  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,private toast:ToastrService) {}
+  constructor(private SiteService:SiteService, private route:ActivatedRoute, private router: Router,private confirmBoxEvokeService: ConfirmBoxEvokeService,
+    private toast:ToastrService, private teamService: TeamService) {}
 
 
   ngOnInit(): void {
@@ -362,7 +365,7 @@ export class SubFolderComponent {
  
   managePermissions(resource : Resource){
     this.SiteService.checkResourcePermission(this.teamDescription!.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
-      this.SiteService.getPermissions(resource.id).pipe(take(1)).subscribe((data:any)=>{
+      this.SiteService.getPermissions(this.teamDescription.id,resource.id).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
         this.isModalOpen['isManagePermission'] = true;
         this.selectedResource = resource
@@ -381,7 +384,7 @@ export class SubFolderComponent {
   
   onManagePermissions(){
     if (this.permissionsData['ChangedResourcePermissions'].length >=1){
-      this.SiteService.changeResourcePermissions(this.selectedResource.id, this.permissionsData['ChangedResourcePermissions']).pipe(take(1)).subscribe((data =>{
+      this.SiteService.changeResourcePermissions(this.teamDescription.id,this.selectedResource.id, this.permissionsData['ChangedResourcePermissions']).pipe(take(1)).subscribe((data =>{
         this.closePanel()
         this.toast.success('Permissions changed!')
       }),error=>{
@@ -432,6 +435,20 @@ export class SubFolderComponent {
     }
   }
     
+
+  leaveTeam(){
+    this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to leave this team?', 'Confirm', 'Decline')
+    .subscribe(resp => {
+      if (resp.success===true) {
+        this.teamService.deleteUser(this.teamDescription!.id, this.userInfo).pipe(take(1)).subscribe((data:unknown) =>{
+          this.toast.info('Team was abandoned')
+          this.router.navigate([""])
+        },(error =>{
+          console.error(error);
+        })) 
+      }
+    });
+  }
 
 }
 

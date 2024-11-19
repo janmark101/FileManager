@@ -13,6 +13,7 @@ export interface Team {
     "created_at" : Date,
     "team_owner" : User,
     "adding_link_code" : string
+    "description" : string
   }
 
 export interface Resource {

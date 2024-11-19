@@ -22,13 +22,7 @@ export class TeamService {
     }))
   }
 
-  addTeam(team_name : string){
-
-    let data = {
-      "name" : team_name,
-      "users" : [],
-    }
-
+  addTeam(data : any){
     return this.http.post(`${this.baseURL}`,data,{})
     .pipe(catchError(error =>{
       return throwError(error)
@@ -70,6 +64,13 @@ export class TeamService {
 
   deleteUser(teamID : number, userID : number){
     return this.http.delete(`${this.baseURL}${teamID}/${userID}/`)
+    .pipe(catchError(error => {
+      return throwError(error);
+    }))
+  }
+
+  updateTeam(teamID : number, data : any){
+    return this.http.patch(`${this.baseURL}${teamID}/`,data)
     .pipe(catchError(error => {
       return throwError(error);
     }))

@@ -8,6 +8,7 @@ import {
   
 } from '@costlydeveloper/ngx-awesome-popup';
 import { ToastrService } from 'ngx-toastr';
+import { NgForm } from '@angular/forms';
 
 
 @Component({
@@ -32,13 +33,15 @@ export class TeamSettingsComponent implements OnInit{
       last_name : '',
       username : '',
     },
-    adding_link_code : ""
+    adding_link_code : "",
+    description : ""
   }
 
 
   addingLinkWindow : boolean = false;
   addingLink : string = ''
 
+  isManageTeamOpen : boolean = false;
 
   ngOnInit(): void {
     this.route.paramMap.subscribe(params=>{
@@ -85,6 +88,7 @@ export class TeamSettingsComponent implements OnInit{
 
   closePanel(){
     this.addingLinkWindow = false;
+    this.isManageTeamOpen = false;
   }
 
 
@@ -99,6 +103,27 @@ export class TeamSettingsComponent implements OnInit{
         })) 
       }
     });
+  }
+
+
+  manageTeam(){
+    this.isManageTeamOpen = true;
+  }
+
+  
+  onManageTeam(form : NgForm){
+    let data = {
+      "name" : form.value['team-name'],
+      "description" : form.value['team-description'],
+    }
+
+    this.teamService.updateTeam(this.teamDescription.id,data).pipe(take(1)).subscribe((data => {
+      this.toast.info("Updated")
+      this.isManageTeamOpen = false;
+      this.ngOnInit()
+    }),error=>{
+      this.toast.error("Something went wrong!")
+    })
   }
 }
 

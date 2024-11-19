@@ -37,7 +37,8 @@ export class TeamComponent implements OnInit{
       last_name : '',
       username : '',
     },
-    adding_link_code : ""
+    adding_link_code : "",
+    description : ""
   }
 
   path = [];
@@ -217,7 +218,7 @@ export class TeamComponent implements OnInit{
 
   managePermissions(resource : Resource){
     this.SiteService.checkResourcePermission(this.TeamDescription!.id,resource.id,['Full Access']).pipe(take(1)).subscribe((data=>{ 
-      this.SiteService.getPermissions(resource.id).pipe(take(1)).subscribe((data:any)=>{
+      this.SiteService.getPermissions(this.TeamDescription.id,resource.id).pipe(take(1)).subscribe((data:any)=>{
         this.closeAllDropdowns();
         this.isModalOpen['isManagePermission'] = true;
         this.selectedResource = resource
@@ -236,7 +237,7 @@ export class TeamComponent implements OnInit{
 
   onManagePermissions(){
     if (this.permissionsData['ChangedResourcePermissions'].length >=1){
-      this.SiteService.changeResourcePermissions(this.selectedResource.id, this.permissionsData['ChangedResourcePermissions']).pipe(take(1)).subscribe((data =>{
+      this.SiteService.changeResourcePermissions(this.TeamDescription.id,this.selectedResource.id, this.permissionsData['ChangedResourcePermissions']).pipe(take(1)).subscribe((data =>{
         this.closePanel()
         this.toast.success('Permissions changed!')
       }),error=>{

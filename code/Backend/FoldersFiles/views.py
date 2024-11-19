@@ -118,7 +118,7 @@ class ResourceForTeamView(APIView):
                         payload={
                             "type": "resource",
                             "logic": "POSITIVE",
-                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}",
+                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}_{team.id}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{request.user.id}_{uuid.uuid4()}",
                             "resources": [
@@ -139,7 +139,7 @@ class ResourceForTeamView(APIView):
                         payload={
                             "type": "resource",
                             "logic": "POSITIVE",
-                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}",
+                            "description" : f"{resource_data['_id']}_{get_scope_id('Full Access')}_{team.id}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{team.team_owner.id}_{uuid.uuid4()}",
                             "resources": [
@@ -163,7 +163,7 @@ class ResourceForTeamView(APIView):
                         payload={
                             "type": "resource",
                             "logic": "POSITIVE",
-                            "description" : f"{resource_data['_id']}_{scope}",
+                            "description" : f"{resource_data['_id']}_{scope}_{team.id}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{user.id}_{uuid.uuid4()}",
                             "resources": [
@@ -329,7 +329,7 @@ class FolderObjectView(APIView):
             "uris": [],
             "scopes": ["no_access", "default", "part_access", "full_access"]
         }
-        print(payload)
+        
         
         parent_resource_id = request.data.get('parent_resource')
 
@@ -355,7 +355,7 @@ class FolderObjectView(APIView):
 
 import requests      
 class FolderPermissions(APIView):
-    def get(self,request,id):
+    def get(self,request,tid,id):
         resource_id = id
         
         try:
@@ -375,7 +375,8 @@ class FolderPermissions(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
-    def post(self,request,id):       
+    def post(self,request,tid,id):       
+        team = get_object_or_404(Team,id=tid)
         try:
             for perm in request.data.get('permissions'):
                 access_token = keycloak_connection.token['access_token']
@@ -392,7 +393,7 @@ class FolderPermissions(APIView):
                 payload={
                     "type": "resource",
                     "logic": "POSITIVE",
-                    "description" : f"{id}_{get_scope_id(perm['permission'])}",
+                    "description" : f"{id}_{get_scope_id(perm['permission'])}_{team.id}",
                     "decisionStrategy": "UNANIMOUS",
                     "name": f"{perm['permission_name']}",
                     "resources": [

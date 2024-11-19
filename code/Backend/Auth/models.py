@@ -16,6 +16,7 @@ class Team(models.Model):
     team_owner = models.ForeignKey(User,blank=False,null=False,on_delete=models.CASCADE)
     adding_link_code = models.CharField(max_length=16,null=True,blank=True,unique=True)
     adding_link_code_expiration_time = models.DateTimeField(blank=True,null=True)
+    description = models.TextField(max_length=500, null=True, blank=True, default="")
 
     def __str__(self):
         return self.name

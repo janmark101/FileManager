@@ -37,7 +37,6 @@ class TeamView(APIView):
     
     def post(self,request):
         request.data['team_owner'] = request.user.id
-        print(request.data)
         team = TeamSerialzer(data=request.data)
         if team.is_valid():
             team = team.save()
@@ -59,21 +58,35 @@ class TeamObjectView(APIView):
     
     def delete(self,request,id):
         team = get_object_or_404(Team,id=id)
-        team.delete()
+        
+        if team.team_owner.id != request.user.id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
-            
+
         team_resources = list(filter(lambda resource : int(resource['attributes']['team'][0]) == team.id, resources))
-        
+
         try:
             for resource in team_resources:
                 keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                                                             resource_id=resource['_id'])
-            
+            team.delete()
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def patch(self,request,id):
+        team = get_object_or_404(Team, id=id)
+        
+        if team.team_owner.id != request.user.id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        serializer = TeamSerialzer(team, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_202_ACCEPTED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     
     
 class JoinTeamView(APIView):
@@ -96,7 +109,7 @@ class JoinTeamView(APIView):
                         payload={
                             "type": "resource",
                             "logic": "POSITIVE",
-                            "description" : f"{resource['_id']}_{get_scope_id('No Access')}",
+                            "description" : f"{resource['_id']}_{get_scope_id('No Access')}_{team.id}",
                             "decisionStrategy": "UNANIMOUS",
                             "name": f"{request.user.id}_{uuid.uuid4()}",
                             "resources": [
@@ -124,6 +137,9 @@ class AddingLinkView(APIView):
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
         
+        if team.team_owner.id != request.user.id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         adding_link_code = get_random_string(16)
         while Team.objects.filter(adding_link_code=adding_link_code).exists():
             adding_link_code = get_random_string(16)
@@ -143,18 +159,23 @@ class DeleteUserFromTeam(APIView):
         if user.id == team.team_owner.id:
             return Response({"error" : "Can't delete team owner!"},status=status.HTTP_403_FORBIDDEN)
         
-        team.users.remove(user)
         
-        permissions = keycloak_admin.get_client_authz_permissions(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
-        deleted_user_permissions = list(filter(lambda permission : int(permission['name'].split('_')[0]) == user_id, permissions))
-        
-        for permission in deleted_user_permissions:
-            url = f"{KEYCLOAK_ADMIN['URL']}/admin/realms/Realm-dev/clients/{KEYCLOAK_ADMIN['CLIENT_ID_KEY']}/authz/resource-server/policy/{permission['id']}"
-            access_token = keycloak_connection.token['access_token']
-            headers = {
-                'Authorization': f'Bearer {access_token}'
-            }
+        try:
+            permissions = keycloak_admin.get_client_authz_permissions(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
+            deleted_user_permissions = list(filter(lambda permission : int(permission['name'].split('_')[0]) == user_id and 
+                                                int(permission['description'].split('_')[2]) == team.id, permissions))
             
-            response = requests.delete(url, headers=headers)
+            for permission in deleted_user_permissions:
+                url = f"{KEYCLOAK_ADMIN['URL']}/admin/realms/Realm-dev/clients/{KEYCLOAK_ADMIN['CLIENT_ID_KEY']}/authz/resource-server/policy/{permission['id']}"
+                access_token = keycloak_connection.token['access_token']
+                headers = {
+                    'Authorization': f'Bearer {access_token}'
+                }
+                
+                response = requests.delete(url, headers=headers)
+            team.users.remove(user)
+            return Response(status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-        return Response(status=status.HTTP_200_OK)

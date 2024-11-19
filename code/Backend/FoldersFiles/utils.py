@@ -30,7 +30,7 @@ def get_permissions_for_resource(permission : Dict[str,str],
                                  scope_key : str) -> bool:
     
     description = permission['description']
-    resource, scope = description.split('_')
+    resource, scope, _ = description.split('_')
     
     name = permission['name']
     user, _ = name.split('_')
@@ -94,8 +94,6 @@ def get_sub_resources_to_delete(resources : List[Dict[str,str]],
         
     return resources_ids
 
-def get_all_permissions_for_resource(resource_id : str, permissions : List[Dict[str,str]]) -> List[Dict[str,str]]:
-    
-    filtered_permissions = list(filter(lambda per : per['description'].split('_')[0] == resource_id, permissions))
+
     
     
