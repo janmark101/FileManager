@@ -3,21 +3,21 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from .models import File
 from .serializers import FileSerializer
 from Auth.models import Team
 from django.shortcuts import get_object_or_404
 from Auth.serializers import TeamSerialzer, UserPermissionSerializer
 from django.http import FileResponse, Http404
 import os
-from Backend.settings import KEYCLOAK_ADMIN
-from keycloak import KeycloakAdmin, KeycloakOpenIDConnection, KeycloakUMA
+from Backend.settings import KEYCLOAK_ADMIN, MEDIA_ROOT, BASE_DIR
+from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
 from keycloak.exceptions import KeycloakPostError, KeycloakPutError
 from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, get_sub_resources, get_resource_by_team, \
     get_resource_parent_resources, get_sub_resources_to_delete, get_scope_by_id
 import uuid
 from django.contrib.auth.models import User
-from functools import wraps
+
+
 
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
@@ -35,8 +35,9 @@ keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
 
 def download_file(request, file_path):
-    # file_full_path = os.path.join(settings.MEDIA_ROOT, file_path)
-    file_full_path = '/app/' + file_path 
+    file_full_path = os.path.join(BASE_DIR, file_path)
+    # file_full_path = '/app' + file_path 
+
     if os.path.exists(file_full_path):
         response = FileResponse(open(file_full_path, 'rb'), as_attachment=True)
         response['Content-Disposition'] = f'attachment; filename="{os.path.basename(file_full_path)}"'
@@ -58,7 +59,7 @@ class UploadFileView(APIView):
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
 
         file_instance = File.objects.create(file=uploaded_file,
-                                            folder=resource[0]['_id'])
+                                            resource=resource[0]['_id'])
         
         serializer = FileSerializer(file_instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -203,15 +204,15 @@ class SubResourcesView(APIView):
         
         
         resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
-        print(team.id)
+
         resources_filtered = list(filter(lambda res : get_sub_resources(resource=res,
                                                             team_id=team.id,
-                                                            parent_folder_id=fid), resources)) 
+                                                            parent_resource_id=fid), resources)) 
                 
         
         fixed_resources = [{"name" : resource['name'].rsplit('/',1)[1], "id" : resource['_id']} for resource in resources_filtered]
         
-        files = File.objects.filter(folder=fid)
+        files = File.objects.filter(resource=fid)
         file_serializer = FileSerializer(files,many=True)
 
         team_serializer = TeamSerialzer(team,many=False)
@@ -222,7 +223,7 @@ class SubResourcesView(APIView):
         return Response({"resources" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1], "user" : request.user.id },status=status.HTTP_200_OK)       
         
 
-class CheckFolderPermissionView(APIView):
+class CheckResourcePermissionView(APIView):
     
     def post(self,request,tid,fid):
         
@@ -241,35 +242,6 @@ class CheckFolderPermissionView(APIView):
             return Response(status=status.HTTP_200_OK)
                 
         return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN)   
-
-
-# def checkPermission(func):
-#     @wraps(func)
-#     def wrap(self,request, *args, **kwargs):
-#         print('dekorator')
-#         print(args,kwargs)
-        
-#         resource_id = kwargs.get('id')
-#         scopes = request.data.get('scopes')
-#         if not scopes:
-#             scopes = request.query_params.get('extraParam').split('/')
-#             print(scopes)
-        
-#         permissions = keycloak_admin.get_client_authz_permissions(
-#             client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
-#         )
-
-#         find_permission = list(filter(lambda permission : get_permissions_for_resource(permission=permission,
-#                                                                                     resource_id=resource_id,
-#                                                                                     user_id=request.user.id,
-#                                                                                     scope_key=get_scopes_id(scopes_list=scopes)), permissions))
-        
-#         if find_permission:
-#             return func(self, request, *args, **kwargs)
-                
-#         return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN) 
-#     return wrap
-
     
 
 class FileObjectView(APIView):
@@ -277,7 +249,12 @@ class FileObjectView(APIView):
     
     def delete(self,request,id):
         file = get_object_or_404(File,id=id)
-        file.delete()
+        if file.file and os.path.isfile(file.file.path):
+            try:
+                os.remove(file.file.path)
+            except OSError as e:
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            file.delete()
         return Response(status=status.HTTP_200_OK)
 
     def patch(self,request,id):
@@ -292,25 +269,46 @@ class FileObjectView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
     
-class FolderObjectView(APIView):  
+class ResourceObjectView(APIView):  
 
     def delete(self,request,id):
         try :            
             resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
             
-            resources_ids = get_sub_resources_to_delete(resources=resources,main_folder_id=id, resources_ids=[])
+            resources_ids = get_sub_resources_to_delete(resources=resources,main_resource_id=id, resources_ids=[])
 
             if resources_ids:
                 for resource_id in resources_ids:
                     keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                                                                 resource_id=resource_id)
                     
+                    files_to_delete = File.objects.filter(resource=resource_id)
+                    print(files_to_delete)
+                    for file_obj in files_to_delete:
+                        if file_obj.file and os.path.isfile(file_obj.file.path):
+                            try:
+                                os.remove(file_obj.file.path)
+                                file_obj.delete()
+                            except OSError as e:
+                                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    
             keycloak_admin.delete_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                                                         resource_id=id)
+            
+            files_to_delete = File.objects.filter(resource=id)
+            print(files_to_delete)
+            for file_obj in files_to_delete:
+                if file_obj.file and os.path.isfile(file_obj.file.path):
+                    try:
+                        os.remove(file_obj.file.path)
+                        file_obj.delete()
+                    except OSError as e:
+                        return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             return Response(status=status.HTTP_200_OK)
         
         except Exception as e :
+            print(str(e))
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
@@ -354,7 +352,7 @@ class FolderObjectView(APIView):
         
 
 import requests      
-class FolderPermissions(APIView):
+class ResourcePermissions(APIView):
     def get(self,request,tid,id):
         resource_id = id
         

@@ -146,4 +146,8 @@ export class SiteService {
     }))
   }
 
+  downloadFile(id : number){
+    return this.http.get(`${this.baseURL}download/${id}/`, { responseType: 'blob' });
+  }
+
 }

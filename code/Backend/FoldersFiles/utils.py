@@ -40,13 +40,13 @@ def get_permissions_for_resource(permission : Dict[str,str],
 
 def get_sub_resources(resource : Dict[str,str],
                       team_id : int,
-                      parent_folder_id : str) -> bool:
+                      parent_resource_id : str) -> bool:
     
     attributes = resource['attributes']
-    parent_folder = attributes['parent_resource'][0]
+    parent_resource = attributes['parent_resource'][0]
     team = attributes['team'][0]
     
-    return parent_folder == parent_folder_id and int(team) == team_id
+    return parent_resource == parent_resource_id and int(team) == team_id
     
 
 def get_resource_by_team(resource : Dict[str,str],
@@ -80,16 +80,16 @@ def get_resource_parent_resources(resources : List[Dict[str,str]],
 
 
 def get_sub_resources_to_delete(resources : List[Dict[str,str]], 
-                               main_folder_id : str, 
+                               main_resource_id : str, 
                                resources_ids : List[str]) -> List[str]:
     
-    sub_resources = list(filter(lambda resource : resource['attributes']['parent_resource'][0] == main_folder_id ,resources))
+    sub_resources = list(filter(lambda resource : resource['attributes']['parent_resource'][0] == main_resource_id ,resources))
     
     resources_ids.extend([resource['_id'] for resource in sub_resources])
     
     for resource in sub_resources:
         get_sub_resources_to_delete(resources=resources,
-                                    main_folder_id=resource['_id'],
+                                    main_resource_id=resource['_id'],
                                     resources_ids=resources_ids)
         
     return resources_ids

@@ -189,7 +189,7 @@ STATIC_URL = 'static/'
 
 
 #MEDIA_ROOT = BASE_DIR / '../Frontend/src/assets/'
-MEDIA_ROOT = BASE_DIR / 'Folders/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'Folders')
 MEDIA_URL = 'Folders/'
 
 

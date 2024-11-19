@@ -232,7 +232,7 @@ export class SubFolderComponent {
 
 
   getDownloadUrl(file : any): string {
-    return `http://localhost:8000/web/download/${file}`; 
+    return `http://localhost:8000/web/download${file}`; 
   }
     
 
