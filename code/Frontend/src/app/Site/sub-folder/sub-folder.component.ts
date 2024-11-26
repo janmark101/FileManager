@@ -343,7 +343,11 @@ export class SubFolderComponent {
 
 
   addFile(){
-    this.fileInput.nativeElement.click();
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,this.currentPath.at(-1),['Part Access', 'Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.fileInput.nativeElement.click();
+    }),(error) =>{
+      this.toast.error(error.error.Error)
+    })
   }
 
 

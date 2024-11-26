@@ -8,12 +8,13 @@ import { LoginComponent } from './Site/login/login.component';
 import { RegisterComponent } from './Site/register/register.component';
 import { AuthGuard } from './Site/Services/auth.guard';
 import { JoinTeamComponent } from './Site/join-team/join-team.component';
-import { folderGuard } from './Site/Services/folder.guard';
+import { ProfileComponent } from './Site/profile/profile.component';
 
   const routes: Routes = [
     {path:'', component:HomePageComponent, canActivate:[AuthGuard]},
     {path:'login',component:LoginComponent, canActivate:[AuthGuard]},
     {path:'register',component:RegisterComponent, canActivate:[AuthGuard]},
+    {path:'profile',component:ProfileComponent},
     {path:'teams/:id',component:TeamComponent, canActivate:[AuthGuard]},
     {path:'teams/:id/settings',component:TeamSettingsComponent,canActivate:[AuthGuard]},
     {path:'join/:code',component:JoinTeamComponent,canActivate:[AuthGuard]},

@@ -22,6 +22,8 @@ export class HomePageComponent implements OnInit {
   isAddTeamOpen : boolean = false;
   subscription: Subscription = new Subscription();
 
+  error : string = 'Name must be max 50   long';
+
   ngOnInit(): void {
     this.FetchTeams()
     this.reset();
@@ -54,6 +56,7 @@ export class HomePageComponent implements OnInit {
 
   openAddTeamPanel(){
     this.isAddTeamOpen = true
+    this.error = 'Name must be max 50 letters long';
     
   }
 
@@ -62,6 +65,11 @@ export class HomePageComponent implements OnInit {
   }
 
   onAddTeam(form:NgForm){
+    if (form.value['team-name'].length >50) {
+      this.error = 'za dluga nzawa';
+      return
+    }
+
     let data = {
       "name" : form.value['team-name'],
       "description" : form.value['team-description'],

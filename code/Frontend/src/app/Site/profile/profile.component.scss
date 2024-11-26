@@ -1,0 +1,115 @@
+.profile-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .profile-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .profile-header p {
+    font-size: 1.2rem;
+    color: #777;
+  }
+  
+  .profile-section {
+    margin-bottom: 20px;
+  }
+  
+  .section-toggle {
+    width: 100%;
+    text-align: left;
+    padding: 15px;
+    font-size: 1.2rem;
+    background-color: #e5e5e5;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s ease;
+  }
+  
+  .section-toggle:hover {
+    background-color: #d1d1d1;
+  }
+  
+  .arrow {
+    font-size: 1.5rem;
+  }
+  
+  .section-content {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f1f1f1;
+    border-radius: 5px;
+  }
+  
+  .profile-form .input-group {
+    margin-bottom: 20px;
+  }
+  
+  .profile-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+  }
+  
+  .profile-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .profile-form input:focus {
+    border-color: #4CAF50;
+    outline: none;
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .actions .btn {
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+  }
+  
+  .btn-primary:hover {
+    background-color: #45a049;
+  }
+  
+  .btn-danger {
+    background-color: #f44336;
+    color: white;
+    border: none;
+  }
+  
+  .btn-danger:hover {
+    background-color: #e53935;
+  }
+  

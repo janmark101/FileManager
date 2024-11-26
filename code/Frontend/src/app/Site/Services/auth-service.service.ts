@@ -89,4 +89,16 @@ export class AuthServiceService {
         throw error;
       }));
   }
+
+  deleteAccount(){
+
+  }
+
+  changeData(data : any){
+    return this.http.patch(`${this.baseURL}profile/`,data)
+    .pipe(catchError(error => {
+      console.error('Error while logging in:', error);
+      throw error;
+    }));
+  }
 }

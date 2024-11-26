@@ -14,6 +14,7 @@ from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
 from FoldersFiles.utils import get_scope_id
 import uuid
 import requests
+from .models import UserProfile
 
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
@@ -179,3 +180,27 @@ class DeleteUserFromTeam(APIView):
         except Exception as e:
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+        
+class UserObjectView(APIView):
+    def patch(self,request):
+        user = get_object_or_404(User, id=request.user.id)
+        user_profile = get_object_or_404(UserProfile, user=user)
+        
+        payload = request.data.get('payload')
+        
+        try:
+            keycloak_admin.update_user(user_id=user_profile.keycloak_id,
+                                       payload=payload)
+            
+            user.first_name = payload['firstName']
+            user.last_name = payload['lastName']
+            user.save()
+        except Exception as e:
+            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        print(user_profile.keycloak_id)
+        return Response(status=status.HTTP_200_OK)
+    
+    
+    def delete(self,request):
+        pass

@@ -2,9 +2,9 @@
     <div class="playlist-grid" >
       <button class="add-team-btn" (click)="openAddTeamPanel()">ADD Team</button>
         <div class="team-card" *ngFor="let team of Teams" [routerLink]="['/teams',team.id]">
-            <h2>{{ team.name }}</h2>
-            <p *ngIf="team.description !=''">{{team.description}}</p>
-            <p *ngIf="team.description ==''">...</p>
+            <div style="height: 100%; overflow: hidden;">
+              <h2 style="max-height: 70%;">{{ team.name }}</h2>
+            </div>
           </div>
     </div>
 </div>
@@ -22,6 +22,9 @@
           <form (ngSubmit)="onAddTeam(addTeam)" class="formContainer mt-4"  #addTeam="ngForm">
             <input class="input" type="text" id="team-name" placeholder="Team name" name="team-name" ngModel
               required />
+              <div style="height: 20px;">
+                <p style="color:red;font-size:12px; ">{{error}}</p>
+              </div>
             <textarea class="input" type="text" id="team-description" placeholder="Team description" name="team-description" ngModel
               required  rows="4" cols="50" style="resize: none;"></textarea>
             <div class="buttonContainer mt-2">

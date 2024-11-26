@@ -16,3 +16,10 @@
     height: auto;
 }
 
+.button-b {
+    transition: transform 0.2s ease-in-out;
+}
+
+.button-b:hover{
+    transform: scale(1.05);
+}

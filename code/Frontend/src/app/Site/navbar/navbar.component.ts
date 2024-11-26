@@ -20,32 +20,17 @@ export class NavbarComponent implements OnInit{
 
   subscription: Subscription = new Subscription();
   
-  constructor (private keycloak:KeyCloakService,private SiteService:SiteService,private keycloaksService:KeycloakService,private router:Router) {}
+  constructor (private keycloak:KeyCloakService) {}
 
   ngOnInit(): void {
-    this.user = this.keycloak.Logged();
-    this.get_user();    
-    
+    this.user = this.keycloak.Logged();    
   }
 
-  get_user() {
-    if (this.user == true){
-      this.keycloaksService.loadUserProfile().then(userInfo => {
-        this.userinfo = userInfo
-        
-      }).catch(error => {
-        console.error("Błąd podczas ładowania profilu użytkownika", error);
-      });
-    }
-    else{
-      this.userinfo = undefined;
-    }
-
-  }
 
   login(){
     this.keycloak.Login();
   }
+
 
   logout(){
     this.keycloak.Logout();

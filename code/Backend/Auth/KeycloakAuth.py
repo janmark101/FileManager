@@ -46,7 +46,7 @@ class KeycloakAuthentication(JWTAuthentication):
 
         except TokenError:
             return None
-        
+
         
     def get_or_create_user(self, user_info):
         """

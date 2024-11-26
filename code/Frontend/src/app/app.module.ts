@@ -25,6 +25,7 @@ import { KeycloakAngularModule, KeycloakBearerInterceptor, KeycloakService } fro
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JoinTeamComponent } from './Site/join-team/join-team.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { ProfileComponent } from './Site/profile/profile.component';
 
 
 @NgModule({
@@ -38,6 +39,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     LoginComponent,
     RegisterComponent,
     JoinTeamComponent,
+    ProfileComponent,
 
   ],
   imports: [

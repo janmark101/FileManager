@@ -1,0 +1,85 @@
+<div class="profile-container">
+    <div class="profile-header">
+      <h1>Twoje konto</h1>
+      <p>Zarządzaj swoimi danymi w sposób wygodny</p>
+    </div>
+  
+    <!-- Edytowanie danych osobowych -->
+    <div class="profile-section">
+      <button (click)="toggleSection('personalData')" class="section-toggle">
+        <span class="section-title">Personal Data</span>
+        <span *ngIf="sections['personalData']" class="arrow">&#9660;</span>
+        <span *ngIf="!sections['personalData']" class="arrow">&#9654;</span>
+      </button>
+      <div *ngIf="sections['personalData']" class="section-content">
+        <form (submit)="onSubmitPersonalData(changeData)" class="profile-form" #changeData="ngForm">
+          <div class="input-group">
+            <label for="firstName">First name</label>
+            <input type="text" id="firstName" name="firstName" [ngModel]="user.firstName" placeholder="Enter your first name">
+          </div>
+  
+          <div class="input-group">
+            <label for="lastName">Last name</label>
+            <input type="text" id="lastName" name="lastName" [ngModel]="user.lastName" placeholder="Enter you last name">
+          </div>
+  
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" [(ngModel)]="user.email" placeholder="Wpisz swój email">
+          </div>
+  
+          <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+      </div>
+    </div>
+  
+    <div class="profile-section">
+        <button (click)="toggleSection('email')" class="section-toggle">
+          <span class="section-title">Change Email</span>
+          <span *ngIf="sections['email']" class="arrow">&#9660;</span>
+          <span *ngIf="!sections['email']" class="arrow">&#9654;</span>
+        </button>
+        <div *ngIf="sections['email']" class="section-content">
+          <form (submit)="onSubmitEmail(changeEmail)" class="profile-form" #changeEmail="ngForm">
+            <div class="input-group">
+              <label for="email">Nowe hasło</label>
+              <input type="email" id="email" name="email" placeholder="Enter new email." ngModel>
+            </div>
+            <button type="submit" class="btn btn-primary">Change email</button>
+          </form>
+        </div>
+      </div>
+
+
+    <!-- Edytowanie hasła -->
+    <div class="profile-section">
+      <button (click)="toggleSection('password')" class="section-toggle">
+        <span class="section-title">Change Password</span>
+        <span *ngIf="sections['password']" class="arrow">&#9660;</span>
+        <span *ngIf="!sections['password']" class="arrow">&#9654;</span>
+      </button>
+      <div *ngIf="sections['password']" class="section-content">
+        <form (submit)="onSubmitPassword()" class="profile-form">
+          <div class="input-group">
+            <label for="password">New password</label>
+            <input type="password" id="password" name="password" placeholder="New Password">
+          </div>
+          <button type="submit" class="btn btn-primary">Change password</button>
+        </form>
+      </div>
+    </div>
+  
+    <!-- Usuwanie konta -->
+    <div class="profile-section">
+      <button (click)="toggleSection('deleteAccount')" class="section-toggle">
+        <span class="section-title">Delete Account</span>
+        <span *ngIf="sections['deleteAccount']" class="arrow">&#9660;</span>
+        <span *ngIf="!sections['deleteAccount']" class="arrow">&#9654;</span>
+      </button>
+      <div *ngIf="sections['deleteAccount']" class="section-content">
+        <p>Czy na pewno chcesz usunąć swoje konto? Ta operacja jest nieodwracalna.</p>
+        <button (click)="deleteAccount()" class="btn btn-danger">Delete account</button>
+      </div>
+    </div>
+  </div>
+  
