@@ -228,7 +228,7 @@ class CheckResourcePermissionView(APIView):
     def post(self,request,tid,fid):
         
         scopes = request.data.get('scopes')
-        
+
         permissions = keycloak_admin.get_client_authz_permissions(
             client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
         )
@@ -239,7 +239,7 @@ class CheckResourcePermissionView(APIView):
                                                                                        scope_key=get_scopes_id(scopes_list=scopes)), permissions))
         
         if find_permission:
-            return Response(status=status.HTTP_200_OK)
+            return Response({"Success" : "Have permission."},status=status.HTTP_200_OK)
                 
         return Response({'Error':"You dont have permissions to perform this action!"},status=status.HTTP_403_FORBIDDEN)   
     
@@ -260,7 +260,7 @@ class FileObjectView(APIView):
     def patch(self,request,id):
         file = get_object_or_404(File,id=id)
         
-            
+
         serializer = FileSerializer(file,data=request.data,partial=True)
         
         if serializer.is_valid():

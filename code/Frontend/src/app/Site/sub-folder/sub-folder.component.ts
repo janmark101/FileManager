@@ -86,7 +86,8 @@ export class SubFolderComponent {
       this.userInfo = data.user;
       this.makePath();
     },(error:any) =>{
-
+      if (error.status == 404)
+        this.router.navigate([''])
     })
   }
 
@@ -154,9 +155,7 @@ export class SubFolderComponent {
     else {
       tempResourceID = resource.id
     }
-    
-    console.log('file' in this.draggedFileOrResource!);
-    
+       
 
     if ('file' in this.draggedFileOrResource!) {
       this.moveFile(tempResourceID);
@@ -169,12 +168,23 @@ export class SubFolderComponent {
   
   
   moveFile(resourceID: string){
-      // this.SiteService.moveFile(resourceID,this.draggedFileOrResource!.id).pipe(take(1)).subscribe((data:unknown)=>{
-      //   this.ngOnInit();
-      //   this.draggedFileOrResource = null;   
-      // },(error)=>{
-      //   this.draggedFileOrResource = null;
-      // })
+    let actualResouce = this.currentPath.at(-1)
+
+    this.SiteService.checkResourcePermission(this.teamDescription!.id,actualResouce,['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
+      this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Part Access', 'Full Access']).pipe(take(1)).subscribe((data => {
+        this.SiteService.moveFile(resourceID,this.draggedFileOrResource!.id).pipe(take(1)).subscribe((data:unknown)=>{
+            this.ngOnInit();
+            this.draggedFileOrResource = null;   
+        },(error)=>{
+            this.draggedFileOrResource = null;
+            this.toast.error('Something went wrong!')
+          })
+        }),(error) =>{
+          this.toast.error(error.error.Error)
+        }) 
+      }),(error) =>{
+      this.toast.error(error.error.Error)
+    })
   }
 
   moveResource(resourceID : string){    

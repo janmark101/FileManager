@@ -113,3 +113,40 @@
     background-color: #e53935;
   }
   
+
+
+  .change-password {
+    margin: 20px 0;
+    font-family: Arial, sans-serif;
+  }
+  
+  .change-password label {
+    font-weight: bold;
+  }
+  
+  .change-password input {
+    display: block;
+    margin: 10px 0;
+    padding: 8px;
+    width: 100%;
+    max-width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .password-requirements {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 5px;
+  }
+  
+  .password-requirements ul {
+    margin: 5px 0 0;
+    padding-left: 20px;
+    color: #333;
+  }
+  
+  .password-requirements li {
+    list-style: disc;
+  }
+  

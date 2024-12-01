@@ -80,6 +80,7 @@ export class AuthServiceService {
       }));
   }
 
+
   RegisterKeyCloak(data:any){
     let headers = this.setHeaders();
 
@@ -90,9 +91,11 @@ export class AuthServiceService {
       }));
   }
 
+
   deleteAccount(){
 
   }
+
 
   changeData(data : any){
     return this.http.patch(`${this.baseURL}profile/`,data)
@@ -101,4 +104,26 @@ export class AuthServiceService {
       throw error;
     }));
   }
+
+
+  changePassword(data:any){
+    return this.http.patch(`${this.baseURL}profile/`,data)
+    .pipe(catchError(error => {
+      console.error('Error while logging in:', error);
+      throw error;
+    }));
+  }
+
+
+  createLink(email:any){
+    let data = {
+      email : email
+    }
+    return this.http.post(`${this.baseURL}token/`,data)
+    .pipe(catchError(error => {
+      console.error('Error while logging in:', error);
+      throw error;
+    }));
+  }
+
 }

@@ -17,6 +17,14 @@ code/Backend/.env
 ./code/Backend/.env
 /code/Backend/.env
 
+code/Backend/private_key.pem
+./code/Backend/private_key.pem
+/code/Backend/private_key.pem
+
+code/Backend/public_key.pem
+./code/Backend/public_key.pem
+/code/Backend/public_key.pem
+
 /code/Backend/Folders
 
 keycloak

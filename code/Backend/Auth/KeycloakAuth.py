@@ -14,14 +14,14 @@ keycloak_openid = KeycloakOpenID(server_url=KEYCLOAK_OPENID['URL'],
                                  )
 
 
-keycloak_admin = KeycloakAdmin(server_url=KEYCLOAK_ADMIN['URL'],
-                                username=KEYCLOAK_ADMIN['USERNAME'],
-                                password=KEYCLOAK_ADMIN['PASSWORD'],
-                                realm_name=KEYCLOAK_ADMIN['REALM_NAME'],
-                                client_id=KEYCLOAK_ADMIN['CLIENT_ID'],
-                                client_secret_key=KEYCLOAK_ADMIN['CLIENT_SECRET_KEY'],
-                                verify=False
-                                )
+# keycloak_admin = KeycloakAdmin(server_url=KEYCLOAK_ADMIN['URL'],
+#                                 username=KEYCLOAK_ADMIN['USERNAME'],
+#                                 password=KEYCLOAK_ADMIN['PASSWORD'],
+#                                 realm_name=KEYCLOAK_ADMIN['REALM_NAME'],
+#                                 client_id=KEYCLOAK_ADMIN['CLIENT_ID'],
+#                                 client_secret_key=KEYCLOAK_ADMIN['CLIENT_SECRET_KEY'],
+#                                 verify=False
+#                                 )
 
 
 import jwt

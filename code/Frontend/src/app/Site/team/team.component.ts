@@ -74,7 +74,8 @@ export class TeamComponent implements OnInit{
     this.route.params.subscribe(params => {
       this.currentPath = this.buildPath(params['id']);
     });
-
+    console.log("init");
+    
     
   }
 
@@ -90,11 +91,16 @@ export class TeamComponent implements OnInit{
       console.log(data.team);
       
     },(error:any) =>{
+      if (error.status == 404)
+        this.router.navigate([''])
       
     })
   }
 
   navigateToSubResources(resourceID: string): void {    
+    // this.currentPath.push(resourceID.toString());
+    //   this.router.navigate([`/teams`, ...this.currentPath]);
+    
     this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{            
       this.currentPath.push(resourceID.toString());
       this.router.navigate([`/teams`, ...this.currentPath]);

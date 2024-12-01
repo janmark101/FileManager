@@ -53,9 +53,10 @@ export class TeamSettingsComponent implements OnInit{
   getTeam(teamID : number){
     this.teamService.getTeam(teamID).pipe(take(1)).subscribe((data:any) => {
       this.teamDescription = data      
-      console.log(data);
       
-    },(error => {      
+    },(error => {    
+      if (error.status = 404)
+        this.router.navigate([''])  
     }))
   }
 

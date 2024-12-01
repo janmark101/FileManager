@@ -71,9 +71,9 @@ export class SiteService {
     }))
   }
 
-  moveFile(folderId:number | string,fileId:number){
+  moveFile(folderId:number | string,fileId:number | any){
     let data = {
-      'folder' : folderId
+      'resource' : folderId
     }
 
     return this.http.patch(`${this.baseURL}file/${fileId}/`,data)

@@ -9,12 +9,34 @@ from django.utils.crypto import get_random_string
 from datetime import timedelta
 from django.utils import timezone
 from django.contrib.auth.models import User
-from Backend.settings import KEYCLOAK_ADMIN
-from keycloak import KeycloakAdmin, KeycloakOpenIDConnection
+from Backend.settings import KEYCLOAK_ADMIN, KEYCLOAK_OPENID
+from keycloak import KeycloakAdmin, KeycloakOpenIDConnection, KeycloakOpenID
 from FoldersFiles.utils import get_scope_id
 import uuid
 import requests
 from .models import UserProfile
+from datetime import datetime, timedelta
+import jwt
+from cryptography.hazmat.primitives import serialization
+
+
+
+public_key_path = 'public_key.pem'
+
+with open(public_key_path, 'rb') as f:
+    public_key = f.read()
+
+public_key = serialization.load_pem_public_key(public_key)
+
+private_key_path = 'private_key.pem'
+
+with open(private_key_path, 'rb') as f:
+    private_key = f.read()
+
+private_key = serialization.load_pem_private_key(private_key, password=None)
+
+
+
 
 
 keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
@@ -24,6 +46,12 @@ keycloak_connection = KeycloakOpenIDConnection(server_url=KEYCLOAK_ADMIN['URL'],
                                                client_id=KEYCLOAK_ADMIN['CLIENT_ID'],
                                                client_secret_key=KEYCLOAK_ADMIN['CLIENT_SECRET_KEY'],
                                                verify=True)
+
+
+keycloak_openid = KeycloakOpenID(server_url=KEYCLOAK_OPENID['URL'],
+                                 client_id=KEYCLOAK_OPENID['CLIENT_ID'],
+                                 realm_name=KEYCLOAK_OPENID['REALM_NAME']
+                                 )
 
 
 keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
@@ -188,19 +216,79 @@ class UserObjectView(APIView):
         
         payload = request.data.get('payload')
         
-        try:
-            keycloak_admin.update_user(user_id=user_profile.keycloak_id,
-                                       payload=payload)
+        if request.data.get('hash'): ## do zmiany
+            hash = request.data.get('hash')
             
-            user.first_name = payload['firstName']
-            user.last_name = payload['lastName']
-            user.save()
-        except Exception as e:
-            return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        print(user_profile.keycloak_id)
-        return Response(status=status.HTTP_200_OK)
+            try:
+                resp = keycloak_admin.set_user_password(user_id=user_profile.keycloak_id,
+                                                        password=payload['password'],
+                                                        temporary=False)
+                
+                return Response(status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
+        else:
+            
+            if 'email' in payload:
+                try:
+                    data = jwt.decode(payload['email'], public_key, algorithms=['RS256'])
+                
+                except jwt.ExpiredSignatureError:
+                    return Response(status=status.HTTP_410_GONE)
+                except jwt.InvalidTokenError:
+                    return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+                
+                payload = {
+                    "email" : data['new_email']
+                }
+
+                try:
+                    keycloak_admin.update_user(user_id=user_profile.keycloak_id,
+                                               payload=payload)
+                    return Response(status=status.HTTP_200_OK)
+                except Exception as e:
+                    print(str(e))
+                    return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+                
+            
+            try:
+                keycloak_admin.update_user(user_id=user_profile.keycloak_id,
+                                        payload=payload)
+                
+                if 'firstName' in payload:
+                    user.first_name = payload['firstName']
+                if 'lastName' in payload:
+                    user.last_name = payload['lastName']
+                if 'email' in payload:
+                    user.email = payload['email']
+                
+                user.save()
+            except Exception as e:
+                print(str(e))
+                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            return Response(status=status.HTTP_200_OK)
+        
     
     def delete(self,request):
         pass
+
+
+class UserEmailChangeToken(APIView):
+    def post(self,request):        
+        user = get_object_or_404(User, id=request.user.id)
+        user_profile = get_object_or_404(UserProfile, user=user)
+        
+        new_email = request.data.get('email')
+        
+        payload = {
+            "user" : user_profile.keycloak_id,
+            "new_email" : new_email,
+            "exp" : datetime.utcnow() + timedelta(minutes=10)
+        }
+        
+        token = jwt.encode(payload,private_key,algorithm='RS256')
+        return Response(token, status=status.HTTP_200_OK)

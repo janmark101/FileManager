@@ -22,12 +22,7 @@
             <label for="lastName">Last name</label>
             <input type="text" id="lastName" name="lastName" [ngModel]="user.lastName" placeholder="Enter you last name">
           </div>
-  
-          <div class="input-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" [(ngModel)]="user.email" placeholder="Wpisz swój email">
-          </div>
-  
+    
           <button type="submit" class="btn btn-primary">Save changes</button>
         </form>
       </div>
@@ -42,8 +37,9 @@
         <div *ngIf="sections['email']" class="section-content">
           <form (submit)="onSubmitEmail(changeEmail)" class="profile-form" #changeEmail="ngForm">
             <div class="input-group">
-              <label for="email">Nowe hasło</label>
+              <label for="email">New email</label>
               <input type="email" id="email" name="email" placeholder="Enter new email." ngModel>
+              <p style="color:red; font-size:12px">Verification email will be sent to your current email adress</p>
             </div>
             <button type="submit" class="btn btn-primary">Change email</button>
           </form>
@@ -59,27 +55,34 @@
         <span *ngIf="!sections['password']" class="arrow">&#9654;</span>
       </button>
       <div *ngIf="sections['password']" class="section-content">
-        <form (submit)="onSubmitPassword()" class="profile-form">
+        <form (submit)="onSubmitPassword(changePassword)" class="profile-form" #changePassword="ngForm">
+          <div class="input-group">
+            <label for="password">Actual password</label>
+            <input type="password" id="old_password" name="old_password" placeholder="Password" ngModel>
+          </div>
           <div class="input-group">
             <label for="password">New password</label>
-            <input type="password" id="password" name="password" placeholder="New Password">
+            <input type="password" id="password" name="password" placeholder="New Password" ngModel>
+            <small class="password-requirements">
+              Your password must include at least:
+              <ul>
+                <li>8 characters</li>
+                <li>1 uppercase letter</li>
+                <li>1 number</li>
+                <li>1 special character</li>
+              </ul>
+            </small>
           </div>
+          <div class="input-group">
+            <label for="password">Confirm new password</label>
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="New Password" ngModel>
+          </div>
+          <p style="color:red">{{passwordError}}</p>
           <button type="submit" class="btn btn-primary">Change password</button>
         </form>
       </div>
     </div>
   
-    <!-- Usuwanie konta -->
-    <div class="profile-section">
-      <button (click)="toggleSection('deleteAccount')" class="section-toggle">
-        <span class="section-title">Delete Account</span>
-        <span *ngIf="sections['deleteAccount']" class="arrow">&#9660;</span>
-        <span *ngIf="!sections['deleteAccount']" class="arrow">&#9654;</span>
-      </button>
-      <div *ngIf="sections['deleteAccount']" class="section-content">
-        <p>Czy na pewno chcesz usunąć swoje konto? Ta operacja jest nieodwracalna.</p>
-        <button (click)="deleteAccount()" class="btn btn-danger">Delete account</button>
-      </div>
-    </div>
+
   </div>
   

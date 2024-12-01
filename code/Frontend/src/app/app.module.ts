@@ -26,6 +26,9 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { JoinTeamComponent } from './Site/join-team/join-team.component';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ProfileComponent } from './Site/profile/profile.component';
+import { EmailChangeComponent } from './Site/email-change/email-change.component';
+
+
 
 
 @NgModule({
@@ -40,6 +43,7 @@ import { ProfileComponent } from './Site/profile/profile.component';
     RegisterComponent,
     JoinTeamComponent,
     ProfileComponent,
+    EmailChangeComponent,
 
   ],
   imports: [
@@ -54,7 +58,8 @@ import { ProfileComponent } from './Site/profile/profile.component';
     BrowserAnimationsModule,
     ToastrModule.forRoot(),
     KeycloakAngularModule,  
-    DragDropModule
+    DragDropModule,
+
   ],
   providers: [
     {

@@ -7,6 +7,8 @@ import { KeyCloakService } from '../Services/key-cloak.service';
 import { KeycloakService } from 'keycloak-angular';
 import emailjs from 'emailjs-com';
 import { NgForm } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -18,7 +20,7 @@ export class ProfileComponent implements OnInit{
 
 
   constructor(private toast : ToastrService, private confirmBoxEvokeService: ConfirmBoxEvokeService, private Auth: AuthServiceService,
-    private keycloak:KeyCloakService, private keycloaksService:KeycloakService
+    private keycloak:KeyCloakService, private keycloaksService:KeycloakService, private router : Router
   ){}
 
   user = {
@@ -35,39 +37,30 @@ export class ProfileComponent implements OnInit{
     personalData: false,
     email: false,
     password: false,
-    deleteAccount: false
   };
 
-  // user: boolean = false;
+  passwordError : string = "";
 
   ngOnInit(): void {
-    // this.user = this.keycloak.Logged();  
     this.get_user(); 
   }
 
   get_user() {
-    if (true){
-      this.keycloaksService.loadUserProfile().then(userInfo => {
-        console.log(userInfo.firstName);
-        this.user.firstName = userInfo.firstName as string;
-        this.user.lastName = userInfo.lastName as string;
-        this.user.email = userInfo.email as string;
-        this.user.username = userInfo.username as string;
-        
-      }).catch(error => {
-        console.error("Błąd podczas ładowania profilu użytkownika", error);
-      });
-    }
-    else{
-      // this.userinfo = undefined;
-    }
-
+    this.keycloaksService.loadUserProfile().then(userInfo => {
+      this.user.firstName = userInfo.firstName as string;
+      this.user.lastName = userInfo.lastName as string;
+      this.user.email = userInfo.email as string;
+      this.user.username = userInfo.username as string;
+    }).catch(error => {
+      this.router.navigate([''])
+    });
   }
 
 
 
   toggleSection(section: string) {    
     this.sections[section] = !this.sections[section];
+    this.passwordError = "";
   }
 
   onSubmitPersonalData(form : NgForm) {
@@ -84,56 +77,75 @@ export class ProfileComponent implements OnInit{
       this.user.lastName = data.payload.lastName
       this.sections['personalData'] = false;
       this.toast.success("Personal data changed!")
-      // tu trzeba jakby wymusisc wyslanie nowego tokenu bo jak tego nie zrobie to dopoki nie odswieze strony to get_user() zwroci 
-      // stary firstname i lastname (nawet jak zmienie komponenty)
+      location.reload()
     }),error=>{
       console.log("problemy");
       
     })
   }
 
-  onSubmitPassword() {
-    // Logika zmiany hasła
-    console.log('Nowe hasło:', this.user.password);
+  onSubmitPassword(form : NgForm) {
+    const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])(?=.*[A-Z])[A-Za-z\d!@#$%^&*]{8,}$/;
+    
+    if( form.value['password'] != form.value['confirm_password'])
+    {
+      this.passwordError = "Passwords do not match. Please try again."
+      return
+    }
+
+    if(!passwordRegex.test(form.value['password'])){
+      this.passwordError = "Password does not meet the criteria!";
+      return
+    }
+
+
+    console.log(form.value['password']);
+    
+    let data = {
+      payload : {
+        "password" : form.value['password'],
+        } ,
+      hash : form.value['old_password']
+    }
+
+    this.Auth.changePassword(data).pipe(take(1)).subscribe((data =>{
+      this.keycloak.Logout()
+      
+    }), error =>{
+      console.log(error);
+      
+    })
+
   }
 
   onSubmitEmail(form : NgForm) {
     const templateParams = {
       user_email: form.value['email'],
-      message: 'Your email change confirmation link...',
+      message: 'Your email change confirmation link : ',
       Subject : "Email change",
       to_name : this.user.firstName + " " + this.user.lastName,
-      send_to : this.user.email
+      send_to : this.user.email, 
+      link : ""
     };
-    
-    
-    emailjs.send('service_bv2thlp', 'template_6lcbf4c', templateParams, 'VO4iyOWz6JYto-Q_s')
-    .then((response) => {
-      console.log('Email sent successfully', response);
+
+    this.Auth.createLink(form.value['email']).pipe(take(1)).subscribe((data=>{
+      templateParams['link'] = "http://localhost:4200/email/" + data
+      emailjs.send('service_bv2thlp', 'template_6lcbf4c', templateParams, 'VO4iyOWz6JYto-Q_s')
+      .then((response) => {
+        this.toast.info("Verification email sent succesfully.")
+        form.reset();
+      })
+      .catch((error) => {
+        this.toast.error('Something went wrong!')
+      });
+      
+    }), error =>{
+      this.toast.error("Something went wrong!")
     })
-    .catch((error) => {
-      console.error('Error sending email', error);
-    });
+    
   }
 
-  deleteAccount() {
-    const templateParams = {
-      message: 'Your email change confirmation link...',
-      Subject : "Email change",
-      to_name : this.user.firstName + " " + this.user.lastName,
-      send_to : this.user.email
-    };
 
-
-    // this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
-    // .subscribe(resp => {
-    //   this.Auth.deleteAccount().pipe(take(1)).subscribe((data =>{
-        
-    //   }), error =>{
-
-    //   })
-    // });
-  }
 
 
 }
