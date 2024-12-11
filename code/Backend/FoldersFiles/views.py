@@ -16,6 +16,7 @@ from .utils import get_scope_id, get_permissions_for_resource, get_scopes_id, ge
     get_resource_parent_resources, get_sub_resources_to_delete, get_scope_by_id
 import uuid
 from django.contrib.auth.models import User
+from typing import List
 
 
 
@@ -46,6 +47,22 @@ def download_file(request, file_path):
         raise Http404("File does not exist.")
 
 
+def check_permission(scopes : List[str], fid : str, user_id : int) -> bool:
+    
+    permissions = keycloak_admin.get_client_authz_permissions(
+        client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
+    )
+
+    find_permission = list(filter(lambda permission : get_permissions_for_resource(permission=permission,
+                                                                                    resource_id=fid,
+                                                                                    user_id=user_id,
+                                                                                    scope_key=get_scopes_id(scopes_list=scopes)), permissions))
+    
+    if find_permission:
+        return True
+            
+    return False 
+
 
 class UploadFileView(APIView):
     def post(self, request,id):
@@ -68,6 +85,10 @@ class ResourceForTeamView(APIView):
 
     def get(self,request,id):
         team = get_object_or_404(Team,id=id)
+
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         resources = keycloak_admin.get_client_authz_resources(
             client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
             )
@@ -84,6 +105,10 @@ class ResourceForTeamView(APIView):
     
     def post(self,request,id):
         team = get_object_or_404(Team, id=id)
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         resource_name = request.data.get('name')
         
         parent_resource_id  = request.data.get('parent_resource')
@@ -201,7 +226,12 @@ class SubResourcesView(APIView):
         
         team = get_object_or_404(Team,id=tid)
         
+        if check_permission(['Default','Part Access','Full Access'], fid, request.user.id) == False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
 
@@ -222,6 +252,7 @@ class SubResourcesView(APIView):
         
         return Response({"resources" : fixed_resources, "files":file_serializer.data,"team" : team_serializer.data,"resource_names" : resource_names[::-1], "resource_ids" : resource_ids[::-1], "user" : request.user.id },status=status.HTTP_200_OK)       
         
+
 
 class CheckResourcePermissionView(APIView):
     
@@ -248,6 +279,7 @@ class FileObjectView(APIView):
     permission_classes=[AllowAny]
     
     def delete(self,request,id):
+        
         file = get_object_or_404(File,id=id)
         if file.file and os.path.isfile(file.file.path):
             try:
@@ -271,7 +303,16 @@ class FileObjectView(APIView):
     
 class ResourceObjectView(APIView):  
 
-    def delete(self,request,id):
+    def delete(self,request,id, tid):
+        
+        if check_permission(['Full Access'], id, request.user.id) == False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        team = get_object_or_404(Team, id=tid)
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         try :            
             resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
             
@@ -283,7 +324,7 @@ class ResourceObjectView(APIView):
                                                                 resource_id=resource_id)
                     
                     files_to_delete = File.objects.filter(resource=resource_id)
-                    print(files_to_delete)
+
                     for file_obj in files_to_delete:
                         if file_obj.file and os.path.isfile(file_obj.file.path):
                             try:
@@ -296,7 +337,7 @@ class ResourceObjectView(APIView):
                                                         resource_id=id)
             
             files_to_delete = File.objects.filter(resource=id)
-            print(files_to_delete)
+
             for file_obj in files_to_delete:
                 if file_obj.file and os.path.isfile(file_obj.file.path):
                     try:
@@ -312,7 +353,15 @@ class ResourceObjectView(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
 
-    def patch(self,request,id):
+    def patch(self,request,id,tid):
+        
+        team = get_object_or_404(Team, id=tid)
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if check_permission(['Part Access','Full Access'], id, request.user.id) == False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         resource = keycloak_admin.get_client_authz_resource(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'],
                                                             resource_id=id)
@@ -356,6 +405,14 @@ class ResourcePermissions(APIView):
     def get(self,request,tid,id):
         resource_id = id
         
+        team = get_object_or_404(Team, id=tid)
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if check_permission(['Full Access'], id, request.user.id) == False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         try:
             permissions = keycloak_admin.get_client_authz_permissions(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
             filtered_permissions = list(filter(lambda per : per['description'].split('_')[0] == resource_id, permissions))
@@ -375,6 +432,13 @@ class ResourcePermissions(APIView):
         
     def post(self,request,tid,id):       
         team = get_object_or_404(Team,id=tid)
+        
+        if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
+        if check_permission(['Full Access'], id, request.user.id) == False:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        
         try:
             for perm in request.data.get('permissions'):
                 access_token = keycloak_connection.token['access_token']
@@ -415,5 +479,4 @@ class ResourcePermissions(APIView):
                 
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
-            print(e)
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)

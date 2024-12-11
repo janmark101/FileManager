@@ -91,16 +91,13 @@ export class TeamComponent implements OnInit{
       console.log(data.team);
       
     },(error:any) =>{
-      if (error.status == 404)
+      if (error.status == 404 || error.status == 403)
         this.router.navigate([''])
       
     })
   }
 
-  navigateToSubResources(resourceID: string): void {    
-    // this.currentPath.push(resourceID.toString());
-    //   this.router.navigate([`/teams`, ...this.currentPath]);
-    
+  navigateToSubResources(resourceID: string): void {        
     this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Default','Part Access','Full Access']).pipe(take(1)).subscribe((data=>{            
       this.currentPath.push(resourceID.toString());
       this.router.navigate([`/teams`, ...this.currentPath]);
@@ -141,7 +138,7 @@ export class TeamComponent implements OnInit{
     if (this.draggedResource) {
       this.SiteService.checkResourcePermission(this.TeamDescription!.id,this.draggedResource!.id.toString(),['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
         this.SiteService.checkResourcePermission(this.TeamDescription!.id,resourceID,['Part Access', 'Full Access']).pipe(take(1)).subscribe((data => {
-          this.SiteService.moveResource(resourceID,this.draggedResource!.id.toString()).pipe(take(1)).subscribe((data:unknown)=>{
+          this.SiteService.moveResource(resourceID,this.draggedResource!.id.toString(), this.TeamDescription.id).pipe(take(1)).subscribe((data:unknown)=>{
               this.ngOnInit();
               this.draggedResource = null;   
           },(error)=>{
@@ -174,7 +171,7 @@ export class TeamComponent implements OnInit{
   onRenameResource(form :NgForm, resourceID:string){
     this.closeAllDropdowns();
     
-      this.SiteService.renameResource(form.value['edit-name'],resourceID).pipe(take(1)).subscribe((data) =>{
+      this.SiteService.renameResource(form.value['edit-name'],resourceID, this.TeamDescription.id).pipe(take(1)).subscribe((data) =>{
         this.selectedResource.name = form.value['edit-name']
         this.closePanel();
       },(error) =>{
@@ -190,7 +187,7 @@ export class TeamComponent implements OnInit{
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline')
       .subscribe(resp => {
         if (resp.success===true) {
-          this.SiteService.deleteResource(resourceID).pipe(take(1)).subscribe((data:unknown) =>{
+          this.SiteService.deleteResource(resourceID, this.TeamDescription.id).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
             this.toast.info('Folder deleted!')
           },(error) =>{            

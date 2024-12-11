@@ -46,12 +46,12 @@ export class SiteService {
     }))
   }
 
-  renameResource(newFileName:string,fileId:string){
+  renameResource(newFileName:string,fileId:string, team_id : number){
     let data = {
       'name' : newFileName
     }
 
-    return this.http.patch(`${this.baseURL}resource/${fileId}/`,data)
+    return this.http.patch(`${this.baseURL}resource/${fileId}/${team_id}/`,data)
     .pipe(catchError(error =>{
       return throwError(error)
     }))
@@ -64,8 +64,8 @@ export class SiteService {
     }))
   }
 
-  deleteResource(resourceID:string, ){
-    return this.http.delete(`${this.baseURL}resource/${resourceID}/`)
+  deleteResource(resourceID:string, team_id : number){
+    return this.http.delete(`${this.baseURL}resource/${resourceID}/${team_id}/`)
     .pipe(catchError(error =>{
       return throwError(error)
     }))
@@ -82,12 +82,12 @@ export class SiteService {
     }))
   }
 
-  moveResource(parentResourceID : string,resourceID : string){
+  moveResource(parentResourceID : string,resourceID : string, team_id : number){
     let data = {
       'parent_resource' : parentResourceID
     }
 
-    return this.http.patch(`${this.baseURL}resource/${resourceID}/`,data)
+    return this.http.patch(`${this.baseURL}resource/${resourceID}/${team_id}/`,data)
     .pipe(catchError(error =>{
       console.log("Error patching file name: ",error);
       return throwError(error)

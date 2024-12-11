@@ -62,7 +62,7 @@
     
 
     <div class="modal" *ngIf="isManageTeamOpen">
-    <div class="SizeModalContent" style="height: 22rem;">
+    <div class="SizeModalContent" style="height: 25rem;">
         <span class="close" (click)="closePanel()">&times;</span>
             <p class="text-2xl font-bold ">{{teamDescription.name}}</p>
             <form (ngSubmit)="onManageTeam(addTeam)" class="formContainer mt-4"  #addTeam="ngForm">

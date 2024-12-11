@@ -14,15 +14,6 @@ keycloak_openid = KeycloakOpenID(server_url=KEYCLOAK_OPENID['URL'],
                                  )
 
 
-# keycloak_admin = KeycloakAdmin(server_url=KEYCLOAK_ADMIN['URL'],
-#                                 username=KEYCLOAK_ADMIN['USERNAME'],
-#                                 password=KEYCLOAK_ADMIN['PASSWORD'],
-#                                 realm_name=KEYCLOAK_ADMIN['REALM_NAME'],
-#                                 client_id=KEYCLOAK_ADMIN['CLIENT_ID'],
-#                                 client_secret_key=KEYCLOAK_ADMIN['CLIENT_SECRET_KEY'],
-#                                 verify=False
-#                                 )
-
 
 import jwt
 
@@ -38,6 +29,7 @@ class KeycloakAuthentication(JWTAuthentication):
             return None
 
         token = auth_header.split(' ')[1]
+        
         try:
             # UntypedToken(token)
             user_info = keycloak_openid.userinfo(token)
@@ -45,6 +37,10 @@ class KeycloakAuthentication(JWTAuthentication):
             return (user,token)
 
         except TokenError:
+            return None
+        
+        except Exception as e:
+            print(str(e))
             return None
 
         
@@ -59,7 +55,7 @@ class KeycloakAuthentication(JWTAuthentication):
 
         if created:
             user = User.objects.create(
-                email=user_info.get('email'),
+                email=user_info.get('email', ''),
                 first_name=user_info.get('given_name', ''),
                 last_name=user_info.get('family_name', ''),
                 username=user_info.get('preferred_username', userprofile.keycloak_id),

@@ -69,11 +69,6 @@ class TeamView(APIView):
         team = TeamSerialzer(data=request.data)
         if team.is_valid():
             team = team.save()
-            # TeamRoles.objects.create(
-            #     team=team,
-            #     user=request.user,
-            #     role='admin'
-            # )
             return Response({'response' : 'Team created!'}, status=status.HTTP_201_CREATED)
         return Response(team.errors,status = status.HTTP_400_BAD_REQUEST)
     
@@ -127,7 +122,7 @@ class JoinTeamView(APIView):
             if request.user in team.users.all():
                 return Response({"Error":f"Already in {team.name}!"},status=status.HTTP_409_CONFLICT)
             team.users.add(request.user)
-            # TeamRoles.objects.create(user=request.user,team=team,role='default')
+
             resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
             
             team_resources = list(filter(lambda resource : int(resource['attributes']['team'][0]) == team.id, resources))
@@ -184,6 +179,9 @@ class DeleteUserFromTeam(APIView):
         team = get_object_or_404(Team, id=id)
         
         user = get_object_or_404(User, id = user_id)
+        
+        if request.user.id != team.team_owner.id:
+            return Response(status=status.HTTP_403_FORBIDDEN)
         
         if user.id == team.team_owner.id:
             return Response({"error" : "Can't delete team owner!"},status=status.HTTP_403_FORBIDDEN)

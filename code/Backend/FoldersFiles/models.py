@@ -14,7 +14,7 @@ class File(models.Model):
     resource = models.CharField(max_length=50,null=False,blank=False)
     name = models.CharField(max_length=100,null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    # updated_at = models.DateTimeField(auto_now=True)
     file_extension = models.CharField(max_length=10, blank=True)
     
     def save(self, *args, **kwargs):

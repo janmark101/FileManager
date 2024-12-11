@@ -190,7 +190,7 @@ export class SubFolderComponent {
   moveResource(resourceID : string){    
     this.SiteService.checkResourcePermission(this.teamDescription!.id,this.draggedFileOrResource!.id.toString(),['Part Access','Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Part Access', 'Full Access']).pipe(take(1)).subscribe((data => {
-        this.SiteService.moveResource(resourceID,this.draggedFileOrResource!.id.toString()).pipe(take(1)).subscribe((data:unknown)=>{
+        this.SiteService.moveResource(resourceID,this.draggedFileOrResource!.id.toString(), this.teamDescription.id).pipe(take(1)).subscribe((data:unknown)=>{
             this.ngOnInit();
             this.draggedFileOrResource = null;   
         },(error)=>{
@@ -295,7 +295,7 @@ export class SubFolderComponent {
       })
     }
     else{
-      this.SiteService.renameResource(form.value['edit-name'],resourceOrFileID.toString()).pipe(take(1)).subscribe((data:unknown) =>{
+      this.SiteService.renameResource(form.value['edit-name'],resourceOrFileID.toString(), this.teamDescription.id).pipe(take(1)).subscribe((data:unknown) =>{
         this.selectedFileOrResource!.name = form.value['edit-name']
         this.closePanel();
       },(error) =>{
@@ -308,7 +308,7 @@ export class SubFolderComponent {
     this.SiteService.checkResourcePermission(this.teamDescription!.id,resourceID,['Full Access']).pipe(take(1)).subscribe((data=>{ 
       this.confirmBoxEvokeService.danger('Confirm delete!', 'Are you sure you want to delete it?', 'Confirm', 'Decline').subscribe(resp => {
         if (resp.success===true) {
-          this.SiteService.deleteResource(resourceID).pipe(take(1)).subscribe((data:unknown) =>{
+          this.SiteService.deleteResource(resourceID, this.teamDescription.id).pipe(take(1)).subscribe((data:unknown) =>{
             this.ngOnInit();
             this.toast.success('Folder deleted!')
           },(error) =>{
