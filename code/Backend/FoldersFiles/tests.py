@@ -208,22 +208,20 @@ keycloak_openid = KeycloakOpenID(server_url=KEYCLOAK_OPENID['URL'],
 
 
 
-def create_user(token : str):
+def create_user(token : str, username : str):
     user_info = keycloak_openid.userinfo(token)
     userprofile, created = UserProfile.objects.get_or_create(keycloak_id=user_info.get('sub'))
-    user = User.objects.create(username='tester')
+    user = User.objects.create(username=username)
     userprofile.user=user
     userprofile.save()
     return user
 
 
 
-
-
 class ResourceForTeamTest(APITestCase):
     def setUp(self):
-        self.token = keycloak_openid.token(username='tester',grant_type=["password"], password='123')['access_token']
-        self.user = create_user(self.token)
+        self.token = keycloak_openid.token(username='test',grant_type=["password"], password='123')['access_token']
+        self.user = create_user(self.token, 'test')
         self.team = Team.objects.create(name='test',team_owner=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
 
@@ -250,8 +248,8 @@ class ResourceForTeamTest(APITestCase):
     
 class SubResourceTest(APITestCase):
     def setUp(self):
-        self.token = keycloak_openid.token(username='tester',grant_type=["password"], password='123')['access_token']
-        self.user = create_user(self.token)
+        self.token = keycloak_openid.token(username='test',grant_type=["password"], password='123')['access_token']
+        self.user = create_user(self.token, 'test')
         self.team = Team.objects.create(name='test',team_owner=self.user)
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
 
@@ -267,3 +265,57 @@ class SubResourceTest(APITestCase):
         self.client.credentials()  
         response = self.client.get('/web/teams/1/', format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        
+           
+
+class CreatingResourceTest(APITestCase):
+    def setUp(self):
+        self.token = keycloak_openid.token(username='test',grant_type=["password"], password='123')['access_token']
+        self.user = create_user(self.token, 'test')
+        self.user_2 = create_user(keycloak_openid.token(username='test_2',grant_type=["password"], password='123')['access_token'], 'test_2')
+        self.team = Team.objects.create(name='test',team_owner=self.user)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+    def test_creating_resource(self):
+        data = {"name" : "Test Folder", "parent_resource" : 'None', 'scope' : 'No Access'}
+        response = self.client.post(f'/web/teams/{self.team.id}/',data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+    
+    def test_creating_resource_user_not_in_team(self):
+        self.team.team_owner = self.user_2
+        self.team.save()
+        data = {"name" : "Test Folder", "parent_resource" : 'None', 'scope' : 'No Access'}
+        response = self.client.post(f'/web/teams/{self.team.id}/',data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        
+class AcceessResourceTest(APITestCase):
+    def setUp(self):
+        self.token = keycloak_openid.token(username='test',grant_type=["password"], password='123')['access_token']
+        self.user = create_user(self.token, 'test')
+        self.user_2 = create_user(keycloak_openid.token(username='test_2',grant_type=["password"], password='123')['access_token'], 'test_2')
+        self.team = Team.objects.create(name='test',team_owner=self.user)
+        self.team.users.add(self.user_2)
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token}')
+        
+    def test_access_with_permission(self):
+        data = {"name" : "Test Folder 2", "parent_resource" : 'None', 'scope' : 'No Access'}
+        response = self.client.post(f'/web/teams/{self.team.id}/',data, format='json')
+        response = self.client.get(f'/web/teams/{self.team.id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        resource_id = response.json()['resources'][0]['id']
+        
+        response = self.client.get(f'/web/teams/{self.team.id}/{resource_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+    
+    def test_access_without_permission(self):
+        data = {"name" : "Test Folder 3", "parent_resource" : 'None', 'scope' : 'No Access'}
+        response = self.client.post(f'/web/teams/{self.team.id}/',data, format='json')
+        response = self.client.get(f'/web/teams/{self.team.id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        resource_id = response.json()['resources'][0]['id']
+        
+        
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {keycloak_openid.token(username='test_2',grant_type=["password"], password='123')['access_token']}')
+        response = self.client.get(f'/web/teams/{self.team.id}/{resource_id}/', format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
