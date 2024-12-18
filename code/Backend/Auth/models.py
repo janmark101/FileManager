@@ -29,30 +29,3 @@ class Team(models.Model):
         ordering =['id']
 
 
-# class TeamRoles(models.Model):
-    
-#     roles = [
-#         ('manager','Manager'),
-#         ('default','Default'),
-#         ('admin','Admin')
-#     ]
-    
-#     team = models.ForeignKey(Team,on_delete=models.CASCADE)
-#     user = models.ForeignKey(User,on_delete=models.CASCADE)
-#     role = models.CharField(max_length=25,choices=roles,default=roles[1])
-    
-#     def __str__(self):
-#         return f"{self.team} | {self.role} for {self.user.username}"
-
-
-#     @property
-#     def is_default(self):
-#         return self.role=='default'
-    
-#     @property
-#     def is_manager(self):
-#         return self.role=='manager'
-    
-#     @property
-#     def is_admin(self):
-#         return self.role=='admin'

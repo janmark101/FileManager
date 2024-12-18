@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from .serializers import TeamSerialzer
-from .models import Team, TeamRoles
+from .models import Team
 from itertools import chain
 from django.utils.crypto import get_random_string
 from datetime import timedelta
