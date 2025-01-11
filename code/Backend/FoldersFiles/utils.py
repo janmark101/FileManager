@@ -41,6 +41,18 @@ def get_permissions_for_resource(permission : Dict[str,str],
 def get_sub_resources(resource : Dict[str,str],
                       team_id : int,
                       parent_resource_id : str) -> bool:
+    """
+    Function to get all sub resources for specific resource
+    
+    # Args :
+        resource 
+        team_id 
+        parent_resource_id
+        
+        
+    # Retrun :
+        bool
+    """
     
     attributes = resource['attributes']
     parent_resource = attributes['parent_resource'][0]
@@ -51,12 +63,35 @@ def get_sub_resources(resource : Dict[str,str],
 
 def get_resource_by_team(resource : Dict[str,str],
                          team_id : int) -> bool:
+    """
+    Function to get all resources for specific team and where parent_resources is none 
+    
+    # Args :
+        resource 
+        team_id 
+        
+        
+    # Retrun :
+        bool
+    """
     attributes = resource['attributes']
     return int(attributes['team'][0]) == team_id and attributes['parent_resource'][0] == 'None'
 
 
 def get_resource_parent_resources(resources : List[Dict[str,str]],
                                    resource_id : str) -> List[str]:
+    """
+    Function to get all parent resources for specific resource
+    
+    # Args :
+        resources -> list of resources
+        resource_id -> specific resource
+        
+        
+    # Retrun :
+        resource_names -> all parent resources names
+        resource_ids -> all parent resources ids
+    """
     
     resource = list(filter(lambda res : res['_id'] == resource_id ,resources))
     
@@ -82,6 +117,18 @@ def get_resource_parent_resources(resources : List[Dict[str,str]],
 def get_sub_resources_to_delete(resources : List[Dict[str,str]], 
                                main_resource_id : str, 
                                resources_ids : List[str]) -> List[str]:
+    """
+    Function to get all sub resources for specific resource
+    
+    # Args :
+        resource s -> list of resources
+        main_resource_id -> specific resource
+        resources_ids 
+        
+        
+    # Retrun :
+        resources_ids -> list contains ids resources to delete
+    """
     
     sub_resources = list(filter(lambda resource : resource['attributes']['parent_resource'][0] == main_resource_id ,resources))
     

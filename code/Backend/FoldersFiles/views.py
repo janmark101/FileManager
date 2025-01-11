@@ -36,6 +36,16 @@ keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
 
 def download_file(request, file_path):
+    """
+    Function to download file from server via browser
+    
+    # Args :
+        request
+        file_path -> file path to download
+        
+    # Retrun :
+        file or Http404 error
+    """
     file_full_path = os.path.join(BASE_DIR, file_path)
     # file_full_path = '/app' + file_path 
 
@@ -48,7 +58,17 @@ def download_file(request, file_path):
 
 
 def check_permission(scopes : List[str], fid : str, user_id : int) -> bool:
+    """
+    Function to check if user have specific permission
     
+    # Args :
+        scopes : List[str] -> list of permissions to check if user have
+        fid : str -> resource id 
+        user_id : int -> user id
+        
+    # Retrun :
+        bool -> True if user have permission othervise false
+    """
     permissions = keycloak_admin.get_client_authz_permissions(
         client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY']
     )
@@ -66,6 +86,16 @@ def check_permission(scopes : List[str], fid : str, user_id : int) -> bool:
 
 class UploadFileView(APIView):
     def post(self, request,id):
+        """
+        Function to upload file to specific resource
+        
+        # Args :
+            request
+            id -> resource id 
+            
+        # Retrun :
+            Http201 if successfully uploaded file othervise Http400
+        """
 
         resources = keycloak_admin.get_client_authz_resources(client_id=KEYCLOAK_ADMIN['CLIENT_ID_KEY'])
 
@@ -82,8 +112,20 @@ class UploadFileView(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class ResourceForTeamView(APIView):
-
+    """
+    View to create and get team's resources
+    """
     def get(self,request,id):
+        """
+        Function to get all team's resources where parent_resource is none 
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http200 with list contains all resources
+        """
         team = get_object_or_404(Team,id=id)
 
         if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
@@ -104,6 +146,17 @@ class ResourceForTeamView(APIView):
         return Response({"team" :team_serializer.data,"resources" : fixed_resources, "user" : request.user.id},status=status.HTTP_200_OK)
     
     def post(self,request,id):
+        """
+        Function to create new resource in team and create permissions for newly created resource
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http201 when all was good otherwise Http500 
+        """
+        print(id, "team id")
         team = get_object_or_404(Team, id=id)
         
         if (request.user not in team.users.all() and team.team_owner.id != request.user.id):
@@ -223,6 +276,17 @@ class ResourceForTeamView(APIView):
 class SubResourcesView(APIView):
     
     def get(self,request,tid,fid):
+        """
+        Function to get all resources where parent_resource is equal to fid
+        
+        # Args :
+            request
+            fid -> parent resource id 
+            tid -> team id
+            
+        # Retrun :
+            Http200 
+        """
         
         team = get_object_or_404(Team,id=tid)
         
@@ -276,9 +340,22 @@ class CheckResourcePermissionView(APIView):
     
 
 class FileObjectView(APIView):
+    """
+    View to manage files 
+    """
     permission_classes=[AllowAny]
     
     def delete(self,request,id):
+        """
+        Function to delete specific file 
+        
+        # Args :
+            request
+            id -> file id 
+            
+        # Retrun :
+            Http200 or Http500
+        """
         
         file = get_object_or_404(File,id=id)
         if file.file and os.path.isfile(file.file.path):
@@ -290,6 +367,16 @@ class FileObjectView(APIView):
         return Response(status=status.HTTP_200_OK)
 
     def patch(self,request,id):
+        """
+        Function to update files details
+        
+        # Args :
+            request
+            id -> file id 
+            
+        # Retrun :
+            Http200 or Http400
+        """
         file = get_object_or_404(File,id=id)
         
 
@@ -302,8 +389,21 @@ class FileObjectView(APIView):
     
     
 class ResourceObjectView(APIView):  
-
+    """
+    View to manage subresources
+    """
     def delete(self,request,id, tid):
+        """
+        Function to delete specific resource (id) and all resources when parent resource is equal to id
+        
+        # Args :
+            request
+            id -> resource id 
+            tid -> team id
+            
+        # Retrun :
+            Http200 or Http500
+        """
         
         if check_permission(['Full Access'], id, request.user.id) == False:
             return Response(status=status.HTTP_403_FORBIDDEN)
@@ -354,6 +454,17 @@ class ResourceObjectView(APIView):
         
 
     def patch(self,request,id,tid):
+        """
+        Function to update resource's details
+        
+        # Args :
+            request
+            id -> resource id 
+            tid -> team id
+            
+        # Retrun :
+            Http200 or Http400
+        """
         
         team = get_object_or_404(Team, id=tid)
         
@@ -402,7 +513,21 @@ class ResourceObjectView(APIView):
 
 import requests      
 class ResourcePermissions(APIView):
+    """
+    View to manage resource's permissions
+    """
     def get(self,request,tid,id):
+        """
+        Function to get all permissions with users for specific resource
+        
+        # Args :
+            request
+            id -> resource id 
+            tid -> team id
+            
+        # Retrun :
+            Http200 or Http500
+        """
         resource_id = id
         
         team = get_object_or_404(Team, id=tid)
@@ -430,7 +555,18 @@ class ResourcePermissions(APIView):
             return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         
-    def post(self,request,tid,id):       
+    def post(self,request,tid,id):     
+        """
+        Function to update permissions for specific resource
+        
+        # Args :
+            request
+            id -> resource id 
+            tid -> team id
+            
+        # Retrun :
+            Http200 or Http500
+        """  
         team = get_object_or_404(Team,id=tid)
         
         if (request.user not in team.users.all() and team.team_owner.id != request.user.id):

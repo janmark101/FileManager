@@ -1,38 +1,27 @@
 version: "3.8"
 
 services:
-  postgres_db:
-    image: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=${SQL_NAME}
-      - POSTGRES_USER=${SQL_USER}
-      - POSTGRES_PASSWORD=${SQL_PASSWORD}
-    networks:
-      - my-network
-
   keycloak-db:
-    image: postgres
-    environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: keycloak_user
-      POSTGRES_PASSWORD: keycloak_password
-    volumes:
-      - keycloak_data:/var/lib/postgresql/data
-    networks:
-      - my-network
+      image: postgres
+      environment:
+        POSTGRES_DB: ${KK_DB}
+        POSTGRES_USER: ${KK_USER}
+        POSTGRES_PASSWORD: ${KK_USER_PASSWORD}
+      volumes:
+        - keycloak_data:/var/lib/postgresql/data
+      networks:
+        - my-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.1
     environment:
       DB_VENDOR: postgres
       DB_ADDR: keycloak-db
-      DB_DATABASE: keycloak
-      DB_USER: keycloak_user
-      DB_PASSWORD: keycloak_password
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      DB_DATABASE: ${KK_DB}
+      DB_USER: ${KK_USER}
+      DB_PASSWORD: ${KK_USER_PASSWORD}
+      KEYCLOAK_ADMIN: ${KK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KK_ADMIN_PASSWORD}
     ports:
       - "8080:8080"
     depends_on:
@@ -41,26 +30,9 @@ services:
       - my-network
     command:
       - start-dev
-
-  web:
-    build:
-      context: .
-    ports:
-      - "8000:8000"
-    command: ["sh", "./start.sh"]
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      - postgres_db
-    networks:
-      - my-network
-
   
 
 volumes:
-  postgres_data:
   keycloak_data:
 
 networks:

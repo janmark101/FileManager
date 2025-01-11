@@ -87,24 +87,20 @@ WSGI_APPLICATION = 'Backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.environ.get("SQL_NAME"),
+        "USER": os.environ.get("SQL_USER"),
+        "PASSWORD": os.environ.get("SQL_PASSWORD"),
+        "HOST": os.environ.get("HOST"),
+        "PORT": os.environ.get("PORT"),
+        'OPTIONS': {
+            'client_encoding': 'UTF8',
+        }
     }
 }
-
-
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": os.environ.get("SQL_NAME"),
-#         "USER": os.environ.get("SQL_USER"),
-#         "PASSWORD": os.environ.get("SQL_PASSWORD"),
-#         "HOST": os.environ.get("HOST"),
-#         "PORT": os.environ.get("PORT"),
-#     }
-# }
 
 SIMPLE_JWT = {
     'ALGORITHM': 'RS256',
@@ -115,7 +111,7 @@ SIMPLE_JWT = {
     -----END PUBLIC KEY-----
     """,
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'sub',  # W Keycloak 'sub' to unikalny identyfikator użytkownika
+    'USER_ID_FIELD': 'sub',  
     'USER_ID_CLAIM': 'sub',
     'TOKEN_LIFETIME': timedelta(minutes=5),
 }
@@ -131,8 +127,8 @@ KEYCLOAK_ADMIN = {
     "URL" : 'http://localhost:8080',
     "CLIENT_ID" : os.environ.get("CLIENT_ID"),
     "REALM_NAME" : os.environ.get('REALM'),
-    "USERNAME" : os.environ.get("KK_USER"),
-    "PASSWORD" : os.environ.get("KK_PASSWORD"),
+    "USERNAME" : os.environ.get("KK_ADMIN"),
+    "PASSWORD" : os.environ.get("KK_ADMIN_PASSWORD"),
     "CLIENT_SECRET_KEY" : os.environ.get("CLIENT_SECRET_KEY"),
     "CLIENT_ID_KEY" : os.environ.get("CLIENT_ID_KEY")
 }

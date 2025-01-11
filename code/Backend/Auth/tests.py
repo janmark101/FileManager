@@ -32,7 +32,7 @@ def create_user(token : str):
 
 class MiddlewareTestCase(TestCase):
     def test_authenticate_valid_token(self):
-        created_token = keycloak_openid.token(username='tester',grant_type=["password"], password='123')['access_token']
+        created_token = keycloak_openid.token(username='test',grant_type=["password"], password='123')['access_token']
         created_user = create_user(created_token)
         factory = RequestFactory()
         request = factory.get("/")

@@ -57,10 +57,6 @@
       <div *ngIf="sections['password']" class="section-content">
         <form (submit)="onSubmitPassword(changePassword)" class="profile-form" #changePassword="ngForm">
           <div class="input-group">
-            <label for="password">Actual password</label>
-            <input type="password" id="old_password" name="old_password" placeholder="Password" ngModel>
-          </div>
-          <div class="input-group">
             <label for="password">New password</label>
             <input type="password" id="password" name="password" placeholder="New Password" ngModel>
             <small class="password-requirements">

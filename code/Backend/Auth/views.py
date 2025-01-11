@@ -57,7 +57,19 @@ keycloak_openid = KeycloakOpenID(server_url=KEYCLOAK_OPENID['URL'],
 keycloak_admin = KeycloakAdmin(connection=keycloak_connection)
 
 class TeamView(APIView):
+    """
+    View to get and create team
+    """
     def get(self,request):
+        """
+        Function to get all teams for specific user
+        
+        # Args :
+            request
+            
+        # Retrun :
+            Http200 or Http400
+        """
         teams_owner = Team.objects.filter(team_owner=request.user.id)
         teams_part = Team.objects.filter(users__id=request.user.id)
         teams = list(chain(teams_owner, teams_part))
@@ -65,6 +77,15 @@ class TeamView(APIView):
         return Response(serializer.data,status=status.HTTP_200_OK)
     
     def post(self,request):
+        """
+        Function to create new team
+        
+        # Args :
+            request
+
+        # Retrun :
+            Http201 or Http400
+        """
         request.data['team_owner'] = request.user.id
         team = TeamSerialzer(data=request.data)
         if team.is_valid():
@@ -74,13 +95,35 @@ class TeamView(APIView):
     
     
 class TeamObjectView(APIView):
-    
+    """
+    View to manage specific team
+    """
     def get(self,request,id):
+        """
+        Function to get details about specific team
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http200 or Http404 
+        """
         team = get_object_or_404(Team,id=id)
         serializer = TeamSerialzer(team,many=False)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
     def delete(self,request,id):
+        """
+        Function to delete specific team and all linked resources with this team
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http500 or Http204
+        """
         team = get_object_or_404(Team,id=id)
         
         if team.team_owner.id != request.user.id:
@@ -101,6 +144,16 @@ class TeamObjectView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
     
     def patch(self,request,id):
+        """
+        Function to update details about specific team
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http202 or Http400
+        """
         team = get_object_or_404(Team, id=id)
         
         if team.team_owner.id != request.user.id:
@@ -114,8 +167,17 @@ class TeamObjectView(APIView):
     
     
 class JoinTeamView(APIView):
-    
     def get(self,request,code):
+        """
+        Function to join user to team and create permissions for all created in team resources 
+        
+        # Args :
+            request
+            code -> unique access code
+            
+        # Retrun :
+            Http200 or Http500 or Http400
+        """
         team = get_object_or_404(Team,adding_link_code=code)
         
         if team.code_is_valid():
@@ -159,6 +221,16 @@ class JoinTeamView(APIView):
 class AddingLinkView(APIView):
     
     def get(self,request,id):
+        """
+        Function to generate 10 minutes access code to join team
+        
+        # Args :
+            request
+            id -> team id 
+            
+        # Retrun :
+            Http200 
+        """
         team = get_object_or_404(Team,id=id)
         
         if team.team_owner.id != request.user.id:
@@ -176,6 +248,17 @@ class AddingLinkView(APIView):
     
 class DeleteUserFromTeam(APIView):
     def delete(self,request,id, user_id):
+        """
+        Function to delete specific user from team and all his permissions
+        
+        # Args :
+            request
+            id -> team id 
+            user_id -> user's id to delete
+            
+        # Retrun :
+            Http200 or Http500
+        """
         team = get_object_or_404(Team, id=id)
         
         user = get_object_or_404(User, id = user_id)
@@ -209,6 +292,15 @@ class DeleteUserFromTeam(APIView):
         
 class UserObjectView(APIView):
     def patch(self,request):
+        """
+        Function to update user's details
+        
+        # Args :
+            request
+            
+        # Retrun :
+            Http200 or Http500
+        """
         user = get_object_or_404(User, id=request.user.id)
         user_profile = get_object_or_404(UserProfile, user=user)
         
@@ -265,18 +357,23 @@ class UserObjectView(APIView):
                 
                 user.save()
             except Exception as e:
-                print(str(e))
                 return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             
             return Response(status=status.HTTP_200_OK)
         
-    
-    def delete(self,request):
-        pass
 
 
 class UserEmailChangeToken(APIView):
     def post(self,request):        
+        """
+        Function to create special link to change email
+        
+        # Args :
+            request
+            
+        # Retrun :
+            Http200 
+        """
         user = get_object_or_404(User, id=request.user.id)
         user_profile = get_object_or_404(UserProfile, user=user)
         
